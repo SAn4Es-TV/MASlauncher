@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -25,6 +27,8 @@ namespace MASlauncher
         public string downloadString = "";
         public string[] buttonText = { "Установить", "Обновить", "Начать игру" };
         public int type = 2;
+        DirectoryInfo MASpath;
+        FileInfo exePath;
         public MainWindow()
         {
             InitializeComponent();
@@ -32,7 +36,7 @@ namespace MASlauncher
 
             if (!String.IsNullOrWhiteSpace(PathToMAS))
             {
-                FileInfo MASpath = new FileInfo(PathToMAS);
+                MASpath = new DirectoryInfo(PathToMAS);
                 if (MASpath.Exists) type = 2;
                 else type = 0;
             }
@@ -51,16 +55,57 @@ namespace MASlauncher
             switch (type)
             {
                 case 0:
+                    FolderBrowserDialog masPath = new FolderBrowserDialog();
+                    masPath.Description = "Выберите папку с MAS";
+                    if(masPath.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        MASpath = new DirectoryInfo(masPath.SelectedPath);
+                        Debug.Write(MASpath.Exists);
+                        if (MASpath.Exists)
+                        {
+                            exePath = new FileInfo(MASpath.FullName + @"\DDLC.exe");
+                            if (exePath.Exists)
+                            {
+                                Debug.Write(MASpath);
+                                PathToMAS = masPath.SelectedPath;
+                                DownloadTranslate();
+                                type = 2;
+
+                            }
+                            else
+                            {
+                                System.Windows.MessageBox.Show("Отсутствует исполняемый файл", "Monika After Story" );
+                            }
+                        }
+                    }
                     break;
                 case 1:
+                    UpdateTranslate();
                     break;
                 case 2:
+                    RunGame();
                     break;
                 default:
                     break;
             }
+            DownloadButt.Content = buttonText[type];
         }
+        // ------ ФУНКЦИИ КНОПКИ ------
+        // Скачать перевод
+        void DownloadTranslate()
+        {
 
+        }
+        // Запустить мод
+        void RunGame()
+        {
+
+        }
+        // Обновить перевод
+        void UpdateTranslate()
+        {
+
+        }
 
         // ------ ЛОГИКА ОКНА ------
         // Движение мышкой
