@@ -1,4 +1,4 @@
-﻿<Window x:Class="MASlauncher.MainWindow"
+﻿<Window xmlns:hc="https://handyorg.github.io/handycontrol"  x:Class="MASlauncher.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,25 +6,42 @@
         xmlns:local="clr-namespace:MASlauncher"
         mc:Ignorable="d"
         Title="Моника После Истории" Height="450" Width="800"
-        Background="#FF232323" ResizeMode="NoResize" Icon="/menu_new.png" WindowStyle="None">
+        Background="#FF1E1E1E" ResizeMode="NoResize" Icon="/menu_new.png" WindowStyle="None">
     <Grid>
-        <Grid VerticalAlignment="Top" Height="25" Background="#FF424242" MouseDown="Grid_MouseDown">
-            <!--<Image Source="/menu_new.png" HorizontalAlignment="Left" Margin="4,0,0,0" Width="20" Height="20"/>-->
-            <TextBlock Text="Моника После Истории" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFCD86E"/>
-            <Button Content="-" Background="#FF424242" BorderBrush="{x:Null}" Foreground="#FFFCD86E" HorizontalAlignment="Stretch" Margin="742,0,30,0" FontSize="14" FontWeight="Bold" FontStyle="Normal" Click="Button_Click"/>
-            <Button Content="X" Background="#FF424242" BorderBrush="{x:Null}" Foreground="#FFFCD86E" HorizontalAlignment="Right" Click="Button_Click_1"/>
+            <Grid VerticalAlignment="Top" Height="25" Background="#FF424242" MouseDown="Grid_MouseDown">
+                <!--<Image Source="/menu_new.png" HorizontalAlignment="Left" Margin="4,0,0,0" Width="20" Height="20"/>-->
+                <TextBlock Text="-Моника После Истории-" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFCD86E"/>
+                <Button Content="⚙" Background="#FF424242" BorderBrush="{x:Null}" Foreground="#FFFCD86E" HorizontalAlignment="Right" Margin="0,0,55,0" Click="Button_Click_2"/>
+                <Button Content="-" Background="#FF424242" BorderBrush="{x:Null}" Foreground="#FFFCD86E" HorizontalAlignment="Stretch" Margin="742,0,30,0" FontSize="14" FontWeight="Bold" FontStyle="Normal" Click="Button_Click"/>
+                <Button Content="X" Background="#FF424242" BorderBrush="{x:Null}" Foreground="#FFFCD86E" HorizontalAlignment="Right" Click="Button_Click_1"/>
+            </Grid>
+        <Grid Visibility="Visible">
+            <Image x:Name="___Monika_png" Source="/Monika.png" Height="330" Margin="0,0,0,70"/>
+            <Grid Background="#333" Height="100" VerticalAlignment="Bottom" >
+                <Label x:Name="DownloadString" Content="Прогресс: 45%   Скорость: 60 Gb/s" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,30" FontSize="16"/>
+                <ProgressBar x:Name="DownloadProgress" Value="45" VerticalAlignment="Center" Margin="22,30,190,0" Background="#FF424242">
+                    <ProgressBar.Foreground>
+                        <LinearGradientBrush EndPoint="1,0">
+                            <GradientStop Color="#FFFCD86E"/>
+                            <GradientStop Color="#FFFCD86E" Offset="1"/>
+                        </LinearGradientBrush>
+                    </ProgressBar.Foreground>
+                </ProgressBar>
+                <Button x:Name="DownloadButt" Width="150" Height="50" Content="Обновить" FontSize="18" Background="#FFFCD86E" BorderBrush="#00707070" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,30,0" Click="DownloadButt_Click"/>
+            </Grid>
         </Grid>
-        <Grid Background="#333" Height="100" VerticalAlignment="Bottom" >
-            <Label x:Name="DownloadString" Content="Прогресс: 45%   Скорость: 60 Gb/s" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,30" FontSize="16"/>
-            <ProgressBar x:Name="DownloadProgress" Value="45" VerticalAlignment="Center" Margin="22,30,190,0">
-                <ProgressBar.Foreground>
-                    <LinearGradientBrush EndPoint="1,0">
-                        <GradientStop Color="#FFFCD86E"/>
-                        <GradientStop Color="#FFFCD86E" Offset="1"/>
-                    </LinearGradientBrush>
-                </ProgressBar.Foreground>
-            </ProgressBar>
-            <Button x:Name="DownloadButt" Width="150" Height="50" Content="Обновить" FontSize="18" Background="#FFFCD86E" BorderBrush="#00707070" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,30,0" Click="DownloadButt_Click"/>
+        <Grid Margin="0,25,0,0" x:Name="Settings" Background="#FF1E1E1E" Visibility="Hidden" >
+            <hc:SideMenu x:Name="SideMenu" Width="250" HorizontalAlignment="Left" Background="#333" SelectionChanged="SideMenu_SelectionChanged">
+                <hc:SideMenuItem Margin="10,0,0,0" Header="Общие" FontSize="20" Background="#333"  Foreground="#FFFCD86E" Selected="SideMenuItem_Selected"/>
+                <!--<hc:SideMenuItem Margin="10,0,0,0" Header="Игра" FontSize="20" Background="#333" Foreground="#FFFCD86E"/>-->
+            </hc:SideMenu>
+            <Grid Margin="250,0,0,0" x:Name="MainSettings" Visibility="Visible">
+                <TextBlock Margin="20,10,0,0" Text="Папка с игрой:" Foreground="#FFFCD86E" FontSize="20"/>
+                <TextBlock Margin="20,30,0,0" x:Name="PathToDir" Text="dsadas" Foreground="#FFFCD86E" FontSize="20" Width="420" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40"/>
+                <Button x:Name="ChanceGameDir" Content="Изменить" Background="#FFFCD86E" BorderBrush="#00707070" Margin="0,20,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="ChanceGameDir_Click"/>
+                <TextBlock x:Name="ver" Margin="20,60,0,0" Text="Версия клиента: " Foreground="#FFFCD86E" FontSize="20"/>
+                <Button x:Name="CheckUpdate" Content="Проверить обновления" Background="#FFFCD86E" BorderBrush="#00707070" Margin="0,60,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="CheckUpdate_Click"/>
+            </Grid>
         </Grid>
     </Grid>
 </Window>
