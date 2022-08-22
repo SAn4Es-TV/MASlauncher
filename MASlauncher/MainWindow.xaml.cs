@@ -28,6 +28,7 @@ namespace MASlauncher
     {
         public string settingsPath = System.Windows.Forms.Application.StartupPath + @"\Settings.txt";
         public string PathToSetup = System.Windows.Forms.Application.StartupPath + @"\Setup.exe";
+        public string PathToTranslate = System.Windows.Forms.Application.StartupPath + @"\";
         public string PathToMASFolder = "";
         public string PathToMASExe = "";
         public string downloadString = "";
@@ -37,6 +38,11 @@ namespace MASlauncher
         public bool settingsFlag = false;
         DirectoryInfo MASpath;
         FileInfo exePath;
+
+        string CurrentVersion;
+
+        SolicenTEAM.Updater launcherUpdater = new SolicenTEAM.Updater();
+        SolicenTEAM.Updater translateUpdater = new SolicenTEAM.Updater();
         public MainWindow()
         {
             InitializeComponent();
@@ -52,20 +58,22 @@ namespace MASlauncher
             {
                 type = 0;
             }
+            translateUpdater.IniName = "translate.ini";
 
-            type = 1;
+            CheckTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
+
             DownloadProgress.Value = 0;
-            DownloadProgress.Visibility = Visibility.Hidden;
+            DownloadProgress.Visibility = Visibility.Visible;
             DownloadString.Content = downloadString;
             DownloadButt.Content = buttonText[type];
 
-            SolicenTEAM.Updater.ExeFileName = "MASlauncher";
+            launcherUpdater.ExeFileName = "MASlauncher";
             Task.Factory.StartNew(async () =>
             {
-                    await SolicenTEAM.Updater.CheckUpdate("SAn4Es-TV", "MASlauncher");
+                    await launcherUpdater.CheckUpdate("SAn4Es-TV", "MASlauncher");
                 this.Dispatcher.Invoke(() =>
                 {
-                    ver.Text = "Версия: " + SolicenTEAM.Updater.CurrentVersion.ToString();
+                    ver.Text = "Версия: " + launcherUpdater.CurrentVersion.ToString();
                 });
             });
         }
@@ -77,7 +85,7 @@ namespace MASlauncher
                     InstallTranslate();
                     break;
                 case 1:
-                    UpdateTranslate();
+                    DownloadTranslate();
                     break;
                 case 2:
                     RunGame();
@@ -118,13 +126,16 @@ namespace MASlauncher
             }
         }
         // Скачать перевод
-        void DownloadTranslate()
+        async void DownloadTranslate()
         {
+            DownloadTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
+            while (!translateUpdater.readyToInstall) await Task.Delay(100);
             UpdateTranslate();
         }
         // Запустить мод
         void RunGame()
         {
+
             ProcessStartInfo proc = new ProcessStartInfo();
             proc.UseShellExecute = true;
             proc.WorkingDirectory = Environment.CurrentDirectory;
@@ -150,7 +161,53 @@ namespace MASlauncher
             type = 2;
             DownloadButt.Content = buttonText[type];
         }
+        async Task CheckTranslateUpdate(string user, string repo, string path = "")
+        {
+            if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini"))
+                CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
 
+            await Task.Delay(10);
+            translateUpdater.gitUser = user;
+            translateUpdater.gitRepo = repo;
+
+            await translateUpdater.GetUpdateVersion();
+            await Task.Delay(10);
+            CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
+
+            Debug.WriteLine("This translate version: " + CurrentVersion);
+            Debug.WriteLine("New translate version: " + translateUpdater.UpdateVersion);
+            if (translateUpdater.UpdateVersion != CurrentVersion && translateUpdater.UpdateVersion != "")
+            {
+                Debug.WriteLine("New translate detected!");
+                string s = translateUpdater.UpdateDescription;
+                type = 1;
+            }
+            DownloadButt.Content = buttonText[type];
+        }
+        async Task DownloadTranslateUpdate(string user, string repo, string path = "")
+        {
+            if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini"))
+                CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
+
+            await Task.Delay(10);
+            translateUpdater.gitUser = user;
+            translateUpdater.gitRepo = repo;
+
+            await translateUpdater.GetUpdateVersion();
+            await Task.Delay(10);
+            CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
+
+            Debug.WriteLine("This translate version: " + CurrentVersion);
+            Debug.WriteLine("New translate version: " + translateUpdater.UpdateVersion);
+            if(translateUpdater.UpdateVersion != CurrentVersion && translateUpdater.UpdateVersion != "")
+            {
+                while (!translateUpdater.UpdateDescriptionReady) await Task.Delay(100);
+                string s = translateUpdater.UpdateDescription;
+                translateUpdater.solicenBar = DownloadProgress;
+                translateUpdater.DownloadUpdate("SAn4Es-TV", "MAS-Russifier-NEW");
+                translateUpdater.ExctractArchive(path);
+            }
+        }
         // Сохранить настройки
         void SaveSettings()
         {
@@ -195,22 +252,22 @@ namespace MASlauncher
 
         public async Task UpdateLauncherAsync()
         {
-            await SolicenTEAM.Updater.CheckUpdate("SAn4Es-TV", "MASlauncher");
-            if (SolicenTEAM.Updater.UpdateVersion == SolicenTEAM.Updater.CurrentVersion && SolicenTEAM.Updater.UpdateVersion != "")
+            await launcherUpdater.CheckUpdate("SAn4Es-TV", "MASlauncher");
+            if (launcherUpdater.UpdateVersion == launcherUpdater.CurrentVersion && launcherUpdater.UpdateVersion != "")
             {
                 System.Windows.Forms.MessageBox.Show("Установлена новейшая версия програмного обеспечения!");
 
             }
             else
             {
-                Debug.WriteLine(SolicenTEAM.Updater.UpdateDescription);
-                Debug.WriteLine(SolicenTEAM.Updater.CurrentVersion);
-                Debug.WriteLine(SolicenTEAM.Updater.UpdateVersion);
-                if (SolicenTEAM.Updater.UpdateVersion != "")
-                { await SolicenTEAM.Updater.CheckUpdate("SAn4Es-TV", "MASlauncher"); }
+                //Debug.WriteLine(launcherUpdater.UpdateDescription);
+                //Debug.WriteLine(launcherUpdater.CurrentVersion);
+                //Debug.WriteLine(launcherUpdater.UpdateVersion);
+                if (launcherUpdater.UpdateVersion != "")
+                { await launcherUpdater.CheckUpdate("SAn4Es-TV", "MASlauncher"); }
 
-                SolicenTEAM.Updater.DownloadUpdate(SolicenTEAM.Updater.gitUser, SolicenTEAM.Updater.gitRepo);
-                SolicenTEAM.Updater.ExtractArchive();
+                launcherUpdater.DownloadUpdate(launcherUpdater.gitUser, launcherUpdater.gitRepo);
+                launcherUpdater.ExctractArchive(System.Windows.Forms.Application.StartupPath + "\\", true);
             }
         }
         // ------ ЛОГИКА ОКНА ------
