@@ -50,7 +50,6 @@ namespace SolicenTEAM
                 {
                     if(endsWitch != "")
                     {
-                        Debug.WriteLine(item.ToString() + " | " + endsWitch);
                         if (!item.ToString().EndsWith(endsWitch))
                             continue;
                     }

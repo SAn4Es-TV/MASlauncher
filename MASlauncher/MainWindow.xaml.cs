@@ -47,7 +47,6 @@ namespace MASlauncher
         public static bool IsNight => DateTime.Now.Hour > 22 ||
                                         DateTime.Now.Hour < 6;               // Проверка День/Ночь
 
-
         string CurrentVersion;
         string MASCurrentVersion;
 
@@ -128,7 +127,7 @@ namespace MASlauncher
 
         #region ------ ФУНКЦИИ КНОПКИ ------
         // Установить перевод
-        void InstallTranslate()
+        void InstallTranslate() 
         {
             FolderBrowserDialog masPath = new FolderBrowserDialog();
             masPath.Description = "Выберите папку с MAS";
@@ -286,92 +285,81 @@ namespace MASlauncher
         private readonly System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
         private async void Reinstall_ClickAsync(object sender, RoutedEventArgs e)
         {
-            string pathToArchive = System.Windows.Forms.Application.StartupPath + "\\Downloads\\DDLC.zip";
-            if(Directory.Exists(PathToMASFolder + "\\game"))
+            if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\ddlc-win.zip"))
             {
-                Directory.Delete(PathToMASFolder + "\\game", true);
-            }
-            try
-            {
-                int _downloadProcessValue = 0;
-                using (WebClient webClient = new WebClient())
+                if (File.Exists(PathToMASFolder + "\\game\\script-topics.rpyc"))
                 {
-                    webClient.DownloadProgressChanged += (s, a) => {
-                        DownloadProgress.Visibility = System.Windows.Visibility.Visible;
-                        DownloadData.Visibility = System.Windows.Visibility.Visible;
-                        _downloadProcessValue = a.ProgressPercentage;
-                        string downloadSpeed = string.Format("{0} MB/s", (a.BytesReceived / 1024.0 / 1024.0 / stopwatch.Elapsed.TotalSeconds).ToString("0.00"));
-                        DownloadProgress.Value = _downloadProcessValue;
-                        DownloadData.Text = "Загрузка: " + _downloadProcessValue + "%";
-                        Debug.WriteLine($"Download %{_downloadProcessValue}");
-                    };
-                    webClient.DownloadDataCompleted += (s, a) => { 
-                        stopwatch.Reset(); 
-                        DownloadData.Visibility = System.Windows.Visibility.Hidden; 
-                        DownloadProgress.Visibility = System.Windows.Visibility.Hidden; 
-                    };
-                    stopwatch.Start();
-                    lockUnlockButtons(false);
-                    await webClient.DownloadFileTaskAsync(new System.Uri(ddlcLink), pathToArchive);
-                }
-                while (_downloadProcessValue != 100)
-                {
-                    Debug.WriteLine("Waiting archive");
-                    await Task.Delay(10);
-                }
-                DownloadData.Visibility = System.Windows.Visibility.Hidden;
-                DownloadProgress.Visibility = System.Windows.Visibility.Hidden;
-                lockUnlockButtons(true);
-                if (!File.Exists(pathToArchive))
-                {
-                    Debug.WriteLine("DDLC archive in " + pathToArchive + " not found");
-                    return;
-                }
-                string extractPath = PathToMASFolder;
-                using (ZipFile zip = ZipFile.Read(pathToArchive))
-                {
+                    string pathToArchive = System.Windows.Forms.Application.StartupPath + "\\ddlc-win.zip";
+                    if (Directory.Exists(PathToMASFolder + "\\game"))
+                    {
+                        Directory.Delete(PathToMASFolder + "\\game", true);
+                    }
                     try
                     {
-                        zip.ToList().ForEach(ze =>
+                        if (!File.Exists(pathToArchive))
                         {
-                            if (ze.FileName.Contains("game")
-                                && !ze.FileName.Contains("renpy")
-                                && !ze.FileName.Contains("lib"))
+                            Debug.WriteLine("DDLC archive in " + pathToArchive + " not found");
+                            return;
+                        }
+                        lockUnlockButtons(false);
+                        string extractPath = PathToMASFolder;
+                        using (ZipFile zip = ZipFile.Read(pathToArchive))
+                        {
+                            try
                             {
-                                ze.FileName = ze.FileName.Replace("DDLC-1.1.1-pc", "");
-                                Debug.WriteLine("Extracting " + ze.FileName);
-                                ze.Extract(extractPath);
+                                zip.ToList().ForEach(ze =>
+                                {
+                                    if (ze.FileName.Contains("game")
+                                        && !ze.FileName.Contains("renpy")
+                                        && !ze.FileName.Contains("lib"))
+                                    {
+                                        ze.FileName = ze.FileName.Replace("DDLC-1.1.1-pc", "");
+                                        Debug.WriteLine("Extracting " + ze.FileName);
+                                        ze.Extract(extractPath);
+                                    }
+                                });
                             }
-                        });
+                            catch { }
+                        }
+                        File.Delete(pathToArchive);
+
+
+                        if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "mas.ini"))
+                            MASCurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "mas.ini");
+
+                        await Task.Delay(10);
+                        masUpdater.gitUser = "Monika-After-Story";
+                        masUpdater.gitRepo = "MonikaModDev";
+                        masUpdater.solicenBarText = DownloadData;
+                        masUpdater.solicenBar = DownloadProgress;
+
+                        await masUpdater.GetUpdateVersion();
+                        await Task.Delay(10);
+
+                        Debug.WriteLine("This mas version: " + MASCurrentVersion);
+                        Debug.WriteLine("New mas version: " + masUpdater.UpdateVersion);
+
+                        while (!masUpdater.UpdateDescriptionReady) await Task.Delay(100);
+                        string d = masUpdater.UpdateDescription;
+                        masUpdater.DownloadUpdate("Monika-After-Story", "MonikaModDev");
+                        masUpdater.ExctractArchive(PathToMASFolder + "\\game");
+                        lockUnlockButtons(true);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine("ERROR: " + ex);
+                    }
                 }
-                File.Delete(pathToArchive);
-
-
-                if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "mas.ini"))
-                    MASCurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "mas.ini");
-
-                await Task.Delay(10);
-                masUpdater.gitUser = "Monika-After-Story";
-                masUpdater.gitRepo = "MonikaModDev";
-                masUpdater.solicenBarText = DownloadData;
-                masUpdater.solicenBar = DownloadProgress;
-
-                await masUpdater.GetUpdateVersion();
-                await Task.Delay(10);
-
-                Debug.WriteLine("This mas version: " + MASCurrentVersion);
-                Debug.WriteLine("New mas version: " + masUpdater.UpdateVersion);
-                
-                while (!masUpdater.UpdateDescriptionReady) await Task.Delay(100);
-                string d = masUpdater.UpdateDescription;
-                masUpdater.DownloadUpdate("Monika-After-Story", "MonikaModDev");
-                masUpdater.ExctractArchive(PathToMASFolder + "\\game");
+                else
+                {
+                    System.Windows.MessageBox.Show("Для полноценной переустановки нам требуется наличие файлов MonikaAfterStory в папке с игрой, пожалуйста скачайте MonikaAfterStory с их сайта, и поместите в папку game внутри папки с игрой для работы переустановки игры через лаунчер.\n" +
+                "Благодарим за понимание.", "Monika After Story");
+                }
             }
-            catch (Exception ex)
+            else
             {
-                Debug.WriteLine("ERROR: " + ex);
+                System.Windows.MessageBox.Show("Для полноценной переустановки нам требуется наличие архива ddlc-win.zip в папке с лаунчером, пожалуйста скачайте официальную копию DDLC с их сайта, и поместите в папку лаунчера для работы переустановки игры через лаунчер.\n" +
+                "Благодарим за понимание.", "Monika After Story");
             }
         }
 
