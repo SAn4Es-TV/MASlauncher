@@ -34,6 +34,7 @@ namespace SolicenTEAM
         public int _extractProcessValue = 0;
         public int _extractProcessValueMax = 0;
 
+        public string endsWitch = "";
 
         public async void DownloadUpdate(string gitUsername, string gitRepo)
         {
@@ -47,6 +48,12 @@ namespace SolicenTEAM
 
                 foreach (var item in matches)
                 {
+                    if(endsWitch != "")
+                    {
+                        Debug.WriteLine(item.ToString() + " | " + endsWitch);
+                        if (!item.ToString().EndsWith(endsWitch))
+                            continue;
+                    }
                     await Task.Delay(1);
                     if (item.ToString().StartsWith("\"browser"))
                     {
@@ -115,14 +122,23 @@ namespace SolicenTEAM
         }
 
         public System.Windows.Controls.ProgressBar solicenBar;
+        public System.Windows.Controls.TextBlock solicenBarText;
+        private readonly System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
         public void _webClientDownloadChanged(object sender, DownloadProgressChangedEventArgs e)
         {
             solicenBar.Visibility = System.Windows.Visibility.Visible;
+            solicenBarText.Visibility = System.Windows.Visibility.Visible;
             _downloadProcessValue = e.ProgressPercentage;
+            string downloadSpeed = string.Format("{0} MB/s", (e.BytesReceived / 1024.0 / 1024.0 / stopwatch.Elapsed.TotalSeconds).ToString("0.00"));
+            solicenBarText.Text = "Загрузка: " + _downloadProcessValue + "%";
             solicenBar.Value = _downloadProcessValue;
             if (debugEnabled) Debug.WriteLine($"Download %{_downloadProcessValue}");
-            if(_downloadProcessValue >= 100)
+            if (_downloadProcessValue >= 100)
+            {
                 solicenBar.Visibility = System.Windows.Visibility.Hidden;
+                solicenBarText.Visibility = System.Windows.Visibility.Hidden;
+                //stopwatch.Reset();
+            }
         }
 
         public async void ExctractArchive(string ExtractPath, bool UpdateInUpdaterExe = false)

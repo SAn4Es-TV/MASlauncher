@@ -1,10 +1,13 @@
 ﻿using HandyControl.Controls;
 
+using Ionic.Zip;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,18 +49,22 @@ namespace MASlauncher
 
 
         string CurrentVersion;
+        string MASCurrentVersion;
 
         public DoubleAnimation _start;  // Анимация запуска
         public DoubleAnimation _quit;   // Анимация выхода
 
         SolicenTEAM.Updater launcherUpdater = new SolicenTEAM.Updater();
         SolicenTEAM.Updater translateUpdater = new SolicenTEAM.Updater();
+        SolicenTEAM.Updater masUpdater = new SolicenTEAM.Updater();
+
+        string ddlcLink = "https://drive.google.com/u/0/uc?id=1o6urVBdzI1K8KY_z_VrhaYqZZ-dUfZnq&export=download&confirm=t&uuid=108a5d75-09cd-422a-ac88-4ee057586531";
 
         public MainWindow()
         {
             InitializeComponent();
             LoadSettings();
-            if (IsNight)
+            if (!IsNight)
                 ___Monika_png.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/monikaroomdaylight.jpg"));
             else
                 ___Monika_png.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/monikaroomnight.png"));
@@ -74,6 +81,8 @@ namespace MASlauncher
             translateUpdater.IniName = "translate.ini";
 
             translateUpdater.IniName = "translate.ini";
+            masUpdater.IniName = "mas.ini";
+            masUpdater.endsWitch = "Mod.zip\"";
 
             CheckTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
 
@@ -83,8 +92,11 @@ namespace MASlauncher
             DownloadProgress.Visibility = Visibility.Hidden;
             //DownloadString.Content = downloadString;
             DownloadButt.Content = buttonText[type];
+            translateUpdater.solicenBar = DownloadProgress;
+            translateUpdater.solicenBarText = DownloadData;
 
             launcherUpdater.ExeFileName = "MASlauncher";
+            PathToDir.Text = PathToMASFolder;
             Task.Factory.StartNew(async () =>
             {
                     await launcherUpdater.CheckUpdate("SAn4Es-TV", "MASlauncher");
@@ -114,7 +126,7 @@ namespace MASlauncher
             DownloadButt.Content = buttonText[type];
         }
 
-        // ------ ФУНКЦИИ КНОПКИ ------
+        #region ------ ФУНКЦИИ КНОПКИ ------
         // Установить перевод
         void InstallTranslate()
         {
@@ -132,6 +144,7 @@ namespace MASlauncher
                         Debug.Write(MASpath);
                         PathToMASFolder = masPath.SelectedPath;
                         PathToMASExe = PathToMASFolder + @"\DDLC.exe";
+                        PathToDir.Text = PathToMASFolder;
                         SaveSettings();
                         DownloadTranslate();
                         type = 2;
@@ -146,9 +159,11 @@ namespace MASlauncher
         // Скачать перевод
         async void DownloadTranslate()
         {
+            lockUnlockButtons(false);
             DownloadTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
             while (!translateUpdater.readyToInstall) await Task.Delay(100);
             UpdateTranslate();
+            lockUnlockButtons(true);
         }
         // Запустить мод
         void RunGame()
@@ -222,7 +237,7 @@ namespace MASlauncher
                 while (!translateUpdater.UpdateDescriptionReady) await Task.Delay(100);
                 string s = translateUpdater.UpdateDescription;
                 translateUpdater.solicenBar = DownloadProgress;
-                translateUpdater.DownloadUpdate("SAn4Es-TV", "MAS-Russifier-NEW");
+                translateUpdater.DownloadUpdate("DenisSolicen", "MAS-Russifier-NEW");
                 translateUpdater.ExctractArchive(path);
             }
         }
@@ -255,8 +270,8 @@ namespace MASlauncher
                 }
             }
         }
-
-        // ------- НАСТРОЙКИ -------
+        #endregion
+        #region ------- НАСТРОЙКИ -------
         // Изменить путь игры
         private void ChanceGameDir_Click(object sender, RoutedEventArgs e)
         {
@@ -267,6 +282,97 @@ namespace MASlauncher
         {
             UpdateLauncherAsync();
 
+        }
+        private readonly System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+        private async void Reinstall_ClickAsync(object sender, RoutedEventArgs e)
+        {
+            string pathToArchive = System.Windows.Forms.Application.StartupPath + "\\Downloads\\DDLC.zip";
+            if(Directory.Exists(PathToMASFolder + "\\game"))
+            {
+                Directory.Delete(PathToMASFolder + "\\game", true);
+            }
+            try
+            {
+                int _downloadProcessValue = 0;
+                using (WebClient webClient = new WebClient())
+                {
+                    webClient.DownloadProgressChanged += (s, a) => {
+                        DownloadProgress.Visibility = System.Windows.Visibility.Visible;
+                        DownloadData.Visibility = System.Windows.Visibility.Visible;
+                        _downloadProcessValue = a.ProgressPercentage;
+                        string downloadSpeed = string.Format("{0} MB/s", (a.BytesReceived / 1024.0 / 1024.0 / stopwatch.Elapsed.TotalSeconds).ToString("0.00"));
+                        DownloadProgress.Value = _downloadProcessValue;
+                        DownloadData.Text = "Загрузка: " + _downloadProcessValue + "%";
+                        Debug.WriteLine($"Download %{_downloadProcessValue}");
+                    };
+                    webClient.DownloadDataCompleted += (s, a) => { 
+                        stopwatch.Reset(); 
+                        DownloadData.Visibility = System.Windows.Visibility.Hidden; 
+                        DownloadProgress.Visibility = System.Windows.Visibility.Hidden; 
+                    };
+                    stopwatch.Start();
+                    lockUnlockButtons(false);
+                    await webClient.DownloadFileTaskAsync(new System.Uri(ddlcLink), pathToArchive);
+                }
+                while (_downloadProcessValue != 100)
+                {
+                    Debug.WriteLine("Waiting archive");
+                    await Task.Delay(10);
+                }
+                DownloadData.Visibility = System.Windows.Visibility.Hidden;
+                DownloadProgress.Visibility = System.Windows.Visibility.Hidden;
+                lockUnlockButtons(true);
+                if (!File.Exists(pathToArchive))
+                {
+                    Debug.WriteLine("DDLC archive in " + pathToArchive + " not found");
+                    return;
+                }
+                string extractPath = PathToMASFolder;
+                using (ZipFile zip = ZipFile.Read(pathToArchive))
+                {
+                    try
+                    {
+                        zip.ToList().ForEach(ze =>
+                        {
+                            if (ze.FileName.Contains("game")
+                                && !ze.FileName.Contains("renpy")
+                                && !ze.FileName.Contains("lib"))
+                            {
+                                ze.FileName = ze.FileName.Replace("DDLC-1.1.1-pc", "");
+                                Debug.WriteLine("Extracting " + ze.FileName);
+                                ze.Extract(extractPath);
+                            }
+                        });
+                    }
+                    catch { }
+                }
+                File.Delete(pathToArchive);
+
+
+                if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "mas.ini"))
+                    MASCurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "mas.ini");
+
+                await Task.Delay(10);
+                masUpdater.gitUser = "Monika-After-Story";
+                masUpdater.gitRepo = "MonikaModDev";
+                masUpdater.solicenBarText = DownloadData;
+                masUpdater.solicenBar = DownloadProgress;
+
+                await masUpdater.GetUpdateVersion();
+                await Task.Delay(10);
+
+                Debug.WriteLine("This mas version: " + MASCurrentVersion);
+                Debug.WriteLine("New mas version: " + masUpdater.UpdateVersion);
+                
+                while (!masUpdater.UpdateDescriptionReady) await Task.Delay(100);
+                string d = masUpdater.UpdateDescription;
+                masUpdater.DownloadUpdate("Monika-After-Story", "MonikaModDev");
+                masUpdater.ExctractArchive(PathToMASFolder + "\\game");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("ERROR: " + ex);
+            }
         }
 
         public async Task UpdateLauncherAsync()
@@ -289,7 +395,8 @@ namespace MASlauncher
                 launcherUpdater.ExctractArchive(System.Windows.Forms.Application.StartupPath + "\\", true);
             }
         }
-        // ------ ЛОГИКА ОКНА ------
+        #endregion
+        #region ------ ЛОГИКА ОКНА ------
         // Движение мышкой
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -342,7 +449,8 @@ namespace MASlauncher
         private void SideMenu_SelectionChanged(object sender, HandyControl.Data.FunctionEventArgs<object> e)
         {
         }
-
+        #endregion
+        #region ------ БОКОВАЯ ПАНЕЛЬ ------
         private void SideMenuItem_Selected(object sender, RoutedEventArgs e)
         {
             HandyControl.Controls.SideMenuItem item = sender as HandyControl.Controls.SideMenuItem;
@@ -431,6 +539,13 @@ namespace MASlauncher
                 Box.Visibility = Visibility.Hidden;
             };
             Box.BeginAnimation(OpacityProperty, end);
+        }
+        #endregion
+        void lockUnlockButtons(bool flag)
+        {
+                DownloadButt.IsEnabled = flag;
+                CheckUpdate.IsEnabled = flag;
+                Reinstall.IsEnabled = flag;
         }
     }
 }

@@ -39,6 +39,7 @@
                 </Grid>
             </Grid>
             <Button x:Name="DownloadButt" Width="150" Height="50" Content="Обновить" FontSize="18" Background="#FFFCD86E" BorderBrush="#00707070" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,30,30" Click="DownloadButt_Click"/>
+            <TextBlock x:Name="DownloadData" Text="Data" Margin="275,454,192,66" FontSize="20" Foreground="#FF101010" Visibility="Hidden"/>
             <ProgressBar x:Name="DownloadProgress" Value="45" VerticalAlignment="Center" Margin="274,447,190,0" Background="#FF424242">
                 <ProgressBar.Foreground>
                     <LinearGradientBrush EndPoint="1,0">
@@ -59,6 +60,7 @@
                 <Button x:Name="ChanceGameDir" Content="Изменить" Background="#f2d774" BorderBrush="#00707070" Margin="0,20,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="ChanceGameDir_Click"/>
                 <TextBlock x:Name="ver" Margin="20,60,0,0" Text="Версия клиента: " Foreground="#f2d774" FontSize="20"/>
                 <Button x:Name="CheckUpdate" Content="Проверить обновления" Background="#f2d774" BorderBrush="#00707070" Margin="0,60,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="CheckUpdate_Click"/>
+                <Button x:Name="Reinstall" Content="Переустановить Monika After Story" Background="#f2d774" BorderBrush="#00707070" Margin="0,0,20,20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Click="Reinstall_ClickAsync"/>
             </Grid>
         </Grid>
         <Grid Margin="0,25,0,0" x:Name="Box" Background="#d9333333" Visibility="Hidden">
