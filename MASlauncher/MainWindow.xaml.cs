@@ -71,6 +71,7 @@ namespace MASlauncher
             {
                 type = 0;
             }
+            translateUpdater.IniName = "translate.ini";
 
             translateUpdater.IniName = "translate.ini";
 
@@ -102,7 +103,7 @@ namespace MASlauncher
                     InstallTranslate();
                     break;
                 case 1:
-                    UpdateTranslate();
+                    DownloadTranslate();
                     break;
                 case 2:
                     RunGame();
@@ -152,6 +153,7 @@ namespace MASlauncher
         // Запустить мод
         void RunGame()
         {
+
             ProcessStartInfo proc = new ProcessStartInfo();
             proc.UseShellExecute = true;
             proc.WorkingDirectory = Environment.CurrentDirectory;
