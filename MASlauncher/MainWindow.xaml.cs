@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HandyControl.Controls;
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +15,7 @@ using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -24,10 +27,11 @@ namespace MASlauncher
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : System.Windows.Window
     {
         public string settingsPath = System.Windows.Forms.Application.StartupPath + @"\Settings.txt";
         public string PathToSetup = System.Windows.Forms.Application.StartupPath + @"\Setup.exe";
+        public string PathToTranslate = System.Windows.Forms.Application.StartupPath + @"\";
         public string PathToMASFolder = "";
         public string PathToMASExe = "";
         public string downloadString = "";
@@ -36,12 +40,27 @@ namespace MASlauncher
         public int type = 2;
         public bool settingsFlag = false;
         DirectoryInfo MASpath;
-        FileInfo exePath;
+        FileInfo exePath; 
+        public static bool IsNight => DateTime.Now.Hour > 22 ||
+                                        DateTime.Now.Hour < 6;               // Проверка День/Ночь
+
+
+        string CurrentVersion;
+
+        public DoubleAnimation _start;  // Анимация запуска
+        public DoubleAnimation _quit;   // Анимация выхода
+
+        SolicenTEAM.Updater launcherUpdater = new SolicenTEAM.Updater();
+        SolicenTEAM.Updater translateUpdater = new SolicenTEAM.Updater();
+
         public MainWindow()
         {
             InitializeComponent();
             LoadSettings();
-
+            if (IsNight)
+                ___Monika_png.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/monikaroomdaylight.jpg"));
+            else
+                ___Monika_png.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/monikaroomnight.png"));
             if (!String.IsNullOrWhiteSpace(PathToMASFolder))
             {
                 MASpath = new DirectoryInfo(PathToMASFolder);
@@ -53,21 +72,27 @@ namespace MASlauncher
                 type = 0;
             }
 
-            type = 1;
-            DownloadProgress.Value = 0;
-            DownloadProgress.Visibility = Visibility.Hidden;
-            DownloadString.Content = downloadString;
+            translateUpdater.IniName = "translate.ini";
+
+            CheckTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
+
             DownloadButt.Content = buttonText[type];
 
-            SolicenTEAM.Updater.ExeFileName = "MASlauncher";
+            DownloadProgress.Value = 0;
+            DownloadProgress.Visibility = Visibility.Hidden;
+            //DownloadString.Content = downloadString;
+            DownloadButt.Content = buttonText[type];
+
+            launcherUpdater.ExeFileName = "MASlauncher";
             Task.Factory.StartNew(async () =>
             {
-                    await SolicenTEAM.Updater.CheckUpdate("SAn4Es-TV", "MASlauncher");
+                    await launcherUpdater.CheckUpdate("SAn4Es-TV", "MASlauncher");
                 this.Dispatcher.Invoke(() =>
                 {
-                    ver.Text = "Версия: " + SolicenTEAM.Updater.CurrentVersion.ToString();
+                    ver.Text = "Версия клиента: " + launcherUpdater.CurrentVersion.ToString();
                 });
             });
+
         }
         private void DownloadButt_Click(object sender, RoutedEventArgs e)
         {
@@ -118,8 +143,10 @@ namespace MASlauncher
             }
         }
         // Скачать перевод
-        void DownloadTranslate()
+        async void DownloadTranslate()
         {
+            DownloadTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
+            while (!translateUpdater.readyToInstall) await Task.Delay(100);
             UpdateTranslate();
         }
         // Запустить мод
@@ -149,6 +176,53 @@ namespace MASlauncher
             Process.Start(proc); // запускаем программу
             type = 2;
             DownloadButt.Content = buttonText[type];
+        }
+        async Task CheckTranslateUpdate(string user, string repo, string path = "")
+        {
+            if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini"))
+                CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
+
+            await Task.Delay(10);
+            translateUpdater.gitUser = user;
+            translateUpdater.gitRepo = repo;
+
+            await translateUpdater.GetUpdateVersion();
+            await Task.Delay(10);
+            CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
+
+            Debug.WriteLine("This translate version: " + CurrentVersion);
+            Debug.WriteLine("New translate version: " + translateUpdater.UpdateVersion);
+            if (translateUpdater.UpdateVersion != CurrentVersion && translateUpdater.UpdateVersion != "")
+            {
+                Debug.WriteLine("New translate detected!");
+                string s = translateUpdater.UpdateDescription;
+                type = 1;
+            }
+            DownloadButt.Content = buttonText[type];
+        }
+        async Task DownloadTranslateUpdate(string user, string repo, string path = "")
+        {
+            if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini"))
+                CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
+
+            await Task.Delay(10);
+            translateUpdater.gitUser = user;
+            translateUpdater.gitRepo = repo;
+
+            await translateUpdater.GetUpdateVersion();
+            await Task.Delay(10);
+            CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
+
+            Debug.WriteLine("This translate version: " + CurrentVersion);
+            Debug.WriteLine("New translate version: " + translateUpdater.UpdateVersion);
+            if (translateUpdater.UpdateVersion != CurrentVersion && translateUpdater.UpdateVersion != "")
+            {
+                while (!translateUpdater.UpdateDescriptionReady) await Task.Delay(100);
+                string s = translateUpdater.UpdateDescription;
+                translateUpdater.solicenBar = DownloadProgress;
+                translateUpdater.DownloadUpdate("SAn4Es-TV", "MAS-Russifier-NEW");
+                translateUpdater.ExctractArchive(path);
+            }
         }
 
         // Сохранить настройки
@@ -195,22 +269,22 @@ namespace MASlauncher
 
         public async Task UpdateLauncherAsync()
         {
-            await SolicenTEAM.Updater.CheckUpdate("SAn4Es-TV", "MASlauncher");
-            if (SolicenTEAM.Updater.UpdateVersion == SolicenTEAM.Updater.CurrentVersion && SolicenTEAM.Updater.UpdateVersion != "")
+            await launcherUpdater.CheckUpdate("SAn4Es-TV", "MASlauncher");
+            if (launcherUpdater.UpdateVersion == launcherUpdater.CurrentVersion && launcherUpdater.UpdateVersion != "")
             {
                 System.Windows.Forms.MessageBox.Show("Установлена новейшая версия програмного обеспечения!");
 
             }
             else
             {
-                Debug.WriteLine(SolicenTEAM.Updater.UpdateDescription);
-                Debug.WriteLine(SolicenTEAM.Updater.CurrentVersion);
-                Debug.WriteLine(SolicenTEAM.Updater.UpdateVersion);
-                if (SolicenTEAM.Updater.UpdateVersion != "")
-                { await SolicenTEAM.Updater.CheckUpdate("SAn4Es-TV", "MASlauncher"); }
+                //Debug.WriteLine(launcherUpdater.UpdateDescription);
+                //Debug.WriteLine(launcherUpdater.CurrentVersion);
+                //Debug.WriteLine(launcherUpdater.UpdateVersion);
+                if (launcherUpdater.UpdateVersion != "")
+                { await launcherUpdater.CheckUpdate("SAn4Es-TV", "MASlauncher"); }
 
-                SolicenTEAM.Updater.DownloadUpdate(SolicenTEAM.Updater.gitUser, SolicenTEAM.Updater.gitRepo);
-                SolicenTEAM.Updater.ExtractArchive();
+                launcherUpdater.DownloadUpdate(launcherUpdater.gitUser, launcherUpdater.gitRepo);
+                launcherUpdater.ExctractArchive(System.Windows.Forms.Application.StartupPath + "\\", true);
             }
         }
         // ------ ЛОГИКА ОКНА ------
@@ -224,11 +298,31 @@ namespace MASlauncher
         // Открываем настройки
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {
+
             settingsFlag = !settingsFlag;
             if (settingsFlag)
+            {
                 Settings.Visibility = Visibility.Visible;
+                DoubleAnimation start = new DoubleAnimation();
+                start.From = 0;
+                start.To = 1;
+                start.RepeatBehavior = new RepeatBehavior(1);
+                start.Duration = new Duration(TimeSpan.FromMilliseconds(200));
+                Settings.BeginAnimation(OpacityProperty, start);
+            }
             else
-                Settings.Visibility = Visibility.Hidden;
+            {
+                DoubleAnimation end = new DoubleAnimation();
+                end.From = 1;
+                end.To = 0;
+                end.RepeatBehavior = new RepeatBehavior(1);
+                end.Duration = new Duration(TimeSpan.FromMilliseconds(200));
+                end.Completed += (s, a) =>
+                {
+                    Settings.Visibility = Visibility.Hidden;
+                };
+                Settings.BeginAnimation(OpacityProperty, end);
+            }
         }
 
         // Скрываем окно
@@ -265,5 +359,76 @@ namespace MASlauncher
 
         }
 
+        private void Discord_Click(object sender, RoutedEventArgs e)
+        {
+            GoToURL("https://discord.com/invite/ZJ3SQpV");
+        }
+
+        private void Support_Click(object sender, RoutedEventArgs e)
+        {
+            GoToURL("https://discord.gg/C3EyszK59m");
+        }
+
+        private void GitHub_Click(object sender, RoutedEventArgs e)
+        {
+            GoToURL("https://github.com/DenisSolicen/Solicen-Projects");
+
+        }
+
+        private void Android_Click(object sender, RoutedEventArgs e)
+        {
+            GoToURL("https://github.com/DenisSolicen/Solicen-Projects/releases");
+
+        }
+
+        private void License_Click(object sender, RoutedEventArgs e)
+        {
+            BoxTitle.Text = "Правовой аспект";
+            BoxText.Text = "Используемое название «Monika After Story» (MAS) является индикатором, для чего предназначен лаунчер, и мы никак не претендуем на сам «Monika After Story», команду разработчиков и их труды. Нам принадлежат только переводы созданные нами, и ресурсы созданные нами.\n" +
+            "Мы не разработчики MAS, и нам не принадлежит ни единая часть оригинальных ресурсов «Monika After Story».\n" +
+            "Данный лаунчер использует ресурсы, а именно фоны комнаты Моники в дневное, и ночное время -созданные командой MAS, для их мода Monika After Story, мы используем их на добровольной основе указывая источник их происхождения в нашем лаунчере.\n";
+            Box.Visibility = Visibility.Visible;
+            DoubleAnimation start = new DoubleAnimation();
+            start.From = 0;
+            start.To = 1;
+            start.RepeatBehavior = new RepeatBehavior(1);
+            start.Duration = new Duration(TimeSpan.FromMilliseconds(200));
+            Box.BeginAnimation(OpacityProperty, start);
+
+        }
+
+        private void Creators_Click(object sender, RoutedEventArgs e)
+        {
+            BoxTitle.Text = "Создатели";
+            BoxText.Text = "Создатели лаунчера -  SAn4Es_TV и Denis Solicen\n" +
+            "Права на перевод - Команда Солицена(SolicenTEAM)\n" +
+            "Фоны комнаты -команда разработчиков «Monika After Story»";
+            Box.Visibility= Visibility.Visible;
+            DoubleAnimation start = new DoubleAnimation();
+            start.From = 0;
+            start.To = 1;
+            start.RepeatBehavior = new RepeatBehavior(1);
+            start.Duration = new Duration(TimeSpan.FromMilliseconds(200));
+            Box.BeginAnimation(OpacityProperty, start);
+        }
+
+        public void GoToURL(string url)
+        {
+            System.Diagnostics.Process.Start(url);
+        }
+
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+            DoubleAnimation end = new DoubleAnimation();
+            end.From = 1;
+            end.To = 0;
+            end.RepeatBehavior = new RepeatBehavior(1);
+            end.Duration = new Duration(TimeSpan.FromMilliseconds(200));
+            end.Completed += (s, a) =>
+            {
+                Box.Visibility = Visibility.Hidden;
+            };
+            Box.BeginAnimation(OpacityProperty, end);
+        }
     }
 }

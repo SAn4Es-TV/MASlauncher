@@ -5,30 +5,48 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MASlauncher"
         mc:Ignorable="d"
-        Title="Моника После Истории" Height="450" Width="800"
+        Title="Моника После Истории" Height="550" Width="1000"
         Background="#FF1E1E1E" ResizeMode="NoResize" Icon="/menu_new.png" WindowStyle="None">
     <Grid>
-            <Grid VerticalAlignment="Top" Height="25" Background="#FF424242" MouseDown="Grid_MouseDown">
+        <Grid VerticalAlignment="Top" Height="25" Background="#FF20242A" MouseDown="Grid_MouseDown">
                 <!--<Image Source="/menu_new.png" HorizontalAlignment="Left" Margin="4,0,0,0" Width="20" Height="20"/>-->
-                <TextBlock Text="-Моника После Истории-" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFCD86E"/>
-                <Button Content="⚙" Background="#FF424242" BorderBrush="{x:Null}" Foreground="#FFFCD86E" HorizontalAlignment="Right" Margin="0,0,55,0" Click="Button_Click_2"/>
-                <Button Content="-" Background="#FF424242" BorderBrush="{x:Null}" Foreground="#FFFCD86E" HorizontalAlignment="Stretch" Margin="742,0,30,0" FontSize="14" FontWeight="Bold" FontStyle="Normal" Click="Button_Click"/>
-                <Button Content="X" Background="#FF424242" BorderBrush="{x:Null}" Foreground="#FFFCD86E" HorizontalAlignment="Right" Click="Button_Click_1"/>
+            <TextBlock Text="-Моника После Истории-" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#fff"/>
+            <Button Content="⚙" Background="#FF20242A" BorderBrush="{x:Null}" Foreground="#fff" HorizontalAlignment="Right" Margin="0,0,55,0" Click="Button_Click_2"/>
+            <Button Content="-" Background="#FF20242A" BorderBrush="{x:Null}" Foreground="#fff" HorizontalAlignment="Right" Margin="742,0,30,0" FontSize="14" FontWeight="Bold" FontStyle="Normal" Click="Button_Click"/>
+            <Button Content="X" Background="#FF20242A" BorderBrush="{x:Null}" Foreground="#fff" HorizontalAlignment="Right" Click="Button_Click_1"/>
             </Grid>
         <Grid Visibility="Visible">
-            <Image x:Name="___Monika_png" Source="/Monika.png" Height="330" Margin="0,0,0,70"/>
-            <Grid Background="#333" Height="100" VerticalAlignment="Bottom" >
-                <Label x:Name="DownloadString" Content="Прогресс: 45%   Скорость: 60 Gb/s" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,30" FontSize="16"/>
-                <ProgressBar x:Name="DownloadProgress" Value="45" VerticalAlignment="Center" Margin="22,30,190,0" Background="#FF424242">
-                    <ProgressBar.Foreground>
-                        <LinearGradientBrush EndPoint="1,0">
-                            <GradientStop Color="#FFFCD86E"/>
-                            <GradientStop Color="#FFFCD86E" Offset="1"/>
-                        </LinearGradientBrush>
-                    </ProgressBar.Foreground>
-                </ProgressBar>
-                <Button x:Name="DownloadButt" Width="150" Height="50" Content="Обновить" FontSize="18" Background="#FFFCD86E" BorderBrush="#00707070" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,30,0" Click="DownloadButt_Click"/>
+            <Image x:Name="___Monika_png" Source="/Assets/monikaroomdaylight.jpg" Margin="150,25,0,0" Stretch="UniformToFill"/>
+            <Grid Background="#FF20242A" Width="250" Height="550" VerticalAlignment="Center" HorizontalAlignment="Left">
+                <Image x:Name="logo" Source="/Assets/rus_logo_mas.png" Width="200" Height="200" Margin="0,25,0,0" Stretch="Uniform" VerticalAlignment="Top"/>
+                <Grid Margin="0,200,0,70" VerticalAlignment="Bottom" Height="240">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Button x:Name="Discord" Background="#FF20242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="25,0,0,0" Content="Discord" Foreground="#BFC0CA" Grid.Row="0" FontFamily="Comic Sans MS" Click="Discord_Click"/>
+                    <Button x:Name="Support" Background="#FF20242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="25,0,0,0" Content="Поддержка" Foreground="#BFC0CA" Grid.Row="1" FontFamily="Comic Sans MS" Click="Support_Click"/>
+                    <Button x:Name="GitHub" Background="#FF20242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="25,0,0,0" Content="GitHub" Foreground="#BFC0CA" Grid.Row="3" FontFamily="Comic Sans MS" Click="GitHub_Click"/>
+                    <Button x:Name="Android" Background="#FF20242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="25,0,0,0" Content="Android порт" Foreground="#BFC0CA" Grid.Row="4" FontFamily="Comic Sans MS" Click="Android_Click"/>
+                    <Button x:Name="License" Background="#FF20242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="25,0,0,0" Content="Правовой аспект" Foreground="#BFC0CA" Grid.Row="6" FontFamily="Comic Sans MS" Click="License_Click"/>
+                    <Button x:Name="Creators" Background="#FF20242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="25,0,0,0" Content="Создатели" Foreground="#BFC0CA" Grid.Row="7" FontFamily="Comic Sans MS" Click="Creators_Click"/>
+                </Grid>
             </Grid>
+            <Button x:Name="DownloadButt" Width="150" Height="50" Content="Обновить" FontSize="18" Background="#FFFCD86E" BorderBrush="#00707070" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,30,30" Click="DownloadButt_Click"/>
+            <ProgressBar x:Name="DownloadProgress" Value="45" VerticalAlignment="Center" Margin="274,447,190,0" Background="#FF424242">
+                <ProgressBar.Foreground>
+                    <LinearGradientBrush EndPoint="1,0">
+                        <GradientStop Color="#FFFCD86E"/>
+                        <GradientStop Color="#FFFCD86E" Offset="1"/>
+                    </LinearGradientBrush>
+                </ProgressBar.Foreground>
+            </ProgressBar>
         </Grid>
         <Grid Margin="0,25,0,0" x:Name="Settings" Background="#FF1E1E1E" Visibility="Hidden" >
             <hc:SideMenu x:Name="SideMenu" Width="250" HorizontalAlignment="Left" Background="#333" SelectionChanged="SideMenu_SelectionChanged">
@@ -36,11 +54,18 @@
                 <!--<hc:SideMenuItem Margin="10,0,0,0" Header="Игра" FontSize="20" Background="#333" Foreground="#FFFCD86E"/>-->
             </hc:SideMenu>
             <Grid Margin="250,0,0,0" x:Name="MainSettings" Visibility="Visible">
-                <TextBlock Margin="20,10,0,0" Text="Папка с игрой:" Foreground="#FFFCD86E" FontSize="20"/>
-                <TextBlock Margin="20,30,0,0" x:Name="PathToDir" Text="dsadas" Foreground="#FFFCD86E" FontSize="20" Width="420" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40"/>
-                <Button x:Name="ChanceGameDir" Content="Изменить" Background="#FFFCD86E" BorderBrush="#00707070" Margin="0,20,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="ChanceGameDir_Click"/>
-                <TextBlock x:Name="ver" Margin="20,60,0,0" Text="Версия клиента: " Foreground="#FFFCD86E" FontSize="20"/>
-                <Button x:Name="CheckUpdate" Content="Проверить обновления" Background="#FFFCD86E" BorderBrush="#00707070" Margin="0,60,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="CheckUpdate_Click"/>
+                <TextBlock Margin="20,10,0,0" Text="Папка с игрой:" Foreground="#f2d774" FontSize="20"/>
+                <TextBlock Margin="20,30,0,0" x:Name="PathToDir" Text="dsadas" Foreground="#f2d774" FontSize="20" Width="420" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40"/>
+                <Button x:Name="ChanceGameDir" Content="Изменить" Background="#f2d774" BorderBrush="#00707070" Margin="0,20,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="ChanceGameDir_Click"/>
+                <TextBlock x:Name="ver" Margin="20,60,0,0" Text="Версия клиента: " Foreground="#f2d774" FontSize="20"/>
+                <Button x:Name="CheckUpdate" Content="Проверить обновления" Background="#f2d774" BorderBrush="#00707070" Margin="0,60,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="CheckUpdate_Click"/>
+            </Grid>
+        </Grid>
+        <Grid Margin="0,25,0,0" x:Name="Box" Background="#d9333333" Visibility="Hidden">
+            <Grid Margin="200,50" Background="#222">
+                <TextBlock x:Name="BoxTitle" Margin="30,10,30,370" Text="Создатели" Foreground="#BFC0CA" FontSize="30" TextAlignment="Center" HorizontalAlignment="Stretch" FontFamily="Comic Sans MS" />
+                <TextBlock x:Name="BoxText" TextWrapping="Wrap"  Margin="30,70,30,70" Text="SAn4Es_TV и Denis Solicen" Foreground="#BFC0CA" FontFamily="Comic Sans MS" />
+                <Button Margin="30,70,30,20" Width="550" Content="Закрыть" Height="40"  VerticalAlignment="Bottom" Background="#FFFCD86E" BorderBrush="#00707070" FontSize="18" Click="Button_Click_3" />
             </Grid>
         </Grid>
     </Grid>
