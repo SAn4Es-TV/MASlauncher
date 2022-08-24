@@ -343,6 +343,8 @@ namespace MASlauncher
                         string d = masUpdater.UpdateDescription;
                         masUpdater.DownloadUpdate("Monika-After-Story", "MonikaModDev");
                         masUpdater.ExctractArchive(PathToMASFolder + "\\game");
+                        if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\translate.ini")) File.Delete(System.Windows.Forms.Application.StartupPath + "\\translate.ini");
+                        DownloadTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
                         lockUnlockButtons(true);
                     }
                     catch (Exception ex)
