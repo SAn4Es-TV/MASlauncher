@@ -276,6 +276,10 @@ namespace MASlauncher
         {
             InstallTranslate();
         }
+        private void OpenGameFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("explorer.exe", PathToMASFolder);
+        }
         // Проверить обновления клиента
         private void CheckUpdate_Click(object sender, RoutedEventArgs e)
         {
@@ -321,7 +325,7 @@ namespace MASlauncher
                             }
                             catch { }
                         }
-                        File.Delete(pathToArchive);
+                        //File.Delete(pathToArchive);
 
 
                         if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "mas.ini"))
@@ -340,11 +344,20 @@ namespace MASlauncher
                         Debug.WriteLine("New mas version: " + masUpdater.UpdateVersion);
 
                         while (!masUpdater.UpdateDescriptionReady) await Task.Delay(100);
+                        Debug.WriteLine(masUpdater.UpdateDescriptionReady);
+                        Debug.WriteLine(translateUpdater.UpdateDescriptionReady);
                         string d = masUpdater.UpdateDescription;
                         masUpdater.DownloadUpdate("Monika-After-Story", "MonikaModDev");
                         masUpdater.ExctractArchive(PathToMASFolder + "\\game");
-                        if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\translate.ini")) File.Delete(System.Windows.Forms.Application.StartupPath + "\\translate.ini");
+                        if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\translate.ini")) 
+                            File.Delete(System.Windows.Forms.Application.StartupPath + "\\translate.ini");
+
+                        while (!masUpdater.readyToInstall) await Task.Delay(100);
+
                         DownloadTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
+
+                        while (!translateUpdater.readyToInstall) await Task.Delay(100);
+                        UpdateTranslate();
                         lockUnlockButtons(true);
                     }
                     catch (Exception ex)
@@ -537,5 +550,6 @@ namespace MASlauncher
                 CheckUpdate.IsEnabled = flag;
                 Reinstall.IsEnabled = flag;
         }
+
     }
 }

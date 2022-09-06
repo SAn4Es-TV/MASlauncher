@@ -58,6 +58,7 @@
                 <TextBlock Margin="20,10,0,0" Text="Папка с игрой:" Foreground="#f2d774" FontSize="20"/>
                 <TextBlock Margin="20,30,0,0" x:Name="PathToDir" Text="dsadas" Foreground="#f2d774" FontSize="20" Width="420" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40"/>
                 <Button x:Name="ChanceGameDir" Content="Изменить" Background="#f2d774" BorderBrush="#00707070" Margin="0,20,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="ChanceGameDir_Click"/>
+                <Button x:Name="OpenGameFolder" Content="Открыть папку с игрой" Background="#f2d774" BorderBrush="#00707070" Margin="0,20,100,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="OpenGameFolder_Click" />
                 <TextBlock x:Name="ver" Margin="20,60,0,0" Text="Версия клиента: " Foreground="#f2d774" FontSize="20"/>
                 <Button x:Name="CheckUpdate" Content="Проверить обновления" Background="#f2d774" BorderBrush="#00707070" Margin="0,60,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="CheckUpdate_Click"/>
                 <Button x:Name="Reinstall" Content="Переустановить Monika After Story" Background="#f2d774" BorderBrush="#00707070" Margin="0,0,20,20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Click="Reinstall_ClickAsync"/>
