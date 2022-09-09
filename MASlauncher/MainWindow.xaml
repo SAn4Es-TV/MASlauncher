@@ -39,8 +39,8 @@
                 </Grid>
             </Grid>
             <Button x:Name="DownloadButt" Width="235" Height="65" Content="Обновить" FontSize="24" Background="#FFFCD86E" BorderBrush="#00707070" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,30,30" Click="DownloadButt_Click"/>
-            <TextBlock x:Name="DownloadData" Text="Data" Margin="275,454,192,66" FontSize="20" Foreground="#FF101010" Visibility="Hidden"/>
-            <ProgressBar x:Name="DownloadProgress" Value="45" VerticalAlignment="Center" Margin="274,447,190,0" Background="#FF424242">
+            <TextBlock x:Name="DownloadData" Text="Data" Margin="334,630,300,40" FontSize="24" Foreground="#FF101010" Visibility="Hidden"/>
+            <ProgressBar x:Name="DownloadProgress" Value="45" VerticalAlignment="Center" Margin="334,650,300,0" Background="#FF424242" FontSize="22" Height="30">
                 <ProgressBar.Foreground>
                     <LinearGradientBrush EndPoint="1,0">
                         <GradientStop Color="#FFFCD86E"/>
