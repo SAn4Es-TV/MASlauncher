@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:MASlauncher"
         mc:Ignorable="d"
         Title="Моника После Истории" Height="730" Width="1270"
-        Background="#FF1E1E1E" ResizeMode="NoResize" Icon="/menu_new.png" WindowStyle="None">
+        Background="#FF1E1E1E" ResizeMode="NoResize" Icon="/menu_new.png" WindowStyle="None"
+        AllowsTransparency="True">
     <Grid>
         <Grid VerticalAlignment="Top" Height="25" Background="#FF20242A" MouseDown="Grid_MouseDown">
                 <!--<Image Source="/menu_new.png" HorizontalAlignment="Left" Margin="4,0,0,0" Width="20" Height="20"/>-->
@@ -16,31 +17,37 @@
             <Button Content="X" Background="#FF20242A" BorderBrush="{x:Null}" Foreground="#fff" HorizontalAlignment="Right" Click="Button_Click_1"/>
             </Grid>
         <Grid Visibility="Visible">
-            <Image x:Name="___Monika_png" Source="/Assets/monikaroomdaylight.jpg" Margin="150,25,0,0" Stretch="UniformToFill"/>
-            <Grid Background="#FF20242A" Width="300" Height="730" VerticalAlignment="Center" HorizontalAlignment="Left">
-                <Image x:Name="logo" Source="/Assets/rus_logo_mas.png" Width="280" Height="280" Margin="0,25,0,0" Stretch="Uniform" VerticalAlignment="Top"/>
-                <Grid Margin="0,200,0,70" VerticalAlignment="Bottom" Height="240">
+            <Image x:Name="___Monika_png" Source="/Assets/monikaroomdaylight.jpg" Margin="0,25,0,0" Stretch="UniformToFill"/>
+            <Grid Background="#ff20242A" Width="90" Height="730" VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="sidePanel" MouseEnter="sidePanel_MouseEnter" MouseLeave="sidePanel_MouseLeave">
+                <Grid Margin="0,200,0,0" VerticalAlignment="Bottom" Height="450">
                     <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                        <RowDefinition/>
+                        <RowDefinition Height="70"/>
+                        <RowDefinition Height="70"/>
+                        <RowDefinition Height="70"/>
+                        <RowDefinition Height="70"/>
+                        <RowDefinition Height="70"/>
+                        <RowDefinition Height="70"/>
+                        <RowDefinition Height="70"/>
+                        <RowDefinition Height="75"/>
                     </Grid.RowDefinitions>
-                    <Button x:Name="Discord" FontSize="22" Background="#FF20242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="25,-60,0,0" Height="50" Content="Discord" Foreground="#BFC0CA" Grid.Row="0" FontFamily="Comic Sans MS" Click="Discord_Click"/>
-                    <Button x:Name="Support" FontSize="22" Background="#FF20242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="25,-40,0,0" Height="50" Content="Поддержка" Foreground="#BFC0CA" Grid.Row="1" FontFamily="Comic Sans MS" Click="Support_Click"/>
-                    <Button x:Name="GitHub" FontSize="22" Background="#FF20242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="25,-60,0,0" Height="50" Content="GitHub" Foreground="#BFC0CA" Grid.Row="3" FontFamily="Comic Sans MS" Click="GitHub_Click"/>
-                    <Button x:Name="Android" FontSize="22" Background="#FF20242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="25,-40,0,0" Height="50" Content="Android порт" Foreground="#BFC0CA" Grid.Row="4" FontFamily="Comic Sans MS" Click="Android_Click"/>
-                    <Button x:Name="License" FontSize="22" Background="#FF20242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="25,-40,0,0" Height="50" Content="Правовой аспект" Foreground="#BFC0CA" Grid.Row="6" FontFamily="Comic Sans MS" Click="License_Click"/>
-                    <Button x:Name="Creators" FontSize="22" Background="#FF20242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="25,00,0,0" Height="50" Content="Создатели" Foreground="#BFC0CA" Grid.Row="7" FontFamily="Comic Sans MS" Click="Creators_Click"/>
+                    <Image Source="/Assets/4945914.png"  HorizontalAlignment="Left" Margin="30,-0,0,0" Height="30" Width="30" Grid.Row="0"/>
+                    <Image Source="/Assets/1660165.png"  HorizontalAlignment="Left" Margin="30,-0,0,0" Height="30" Width="30" Grid.Row="1"/>
+                    <Image Source="/Assets/4926624.png"  HorizontalAlignment="Left" Margin="30,-0,0,0" Height="30" Width="30" Grid.Row="2"/>
+                    <Image Source="/Assets/60754.png"  HorizontalAlignment="Left" Margin="30,-0,0,0" Height="30" Width="30" Grid.Row="3"/>
+                    <Image Source="/Assets/2639683.png"  HorizontalAlignment="Left" Margin="30,-0,0,0" Height="30" Width="30" Grid.Row="4"/>
+                    <Image Source="/Assets/151776.png"  HorizontalAlignment="Left" Margin="30,-0,0,0" Height="30" Width="30" Grid.Row="5"/>
+                    <Button x:Name="Discord" FontSize="22" Background="#0020242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="80,-0,0,0" Height="50" Content="Discord" Foreground="#BFC0CA" Grid.Row="0" FontFamily="Comic Sans MS" Click="Discord_Click"/>
+                    <Button x:Name="Support" FontSize="22" Background="#0020242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="80,-0,0,0" Height="50" Content="Поддержка" Foreground="#BFC0CA" Grid.Row="1" FontFamily="Comic Sans MS" Click="Support_Click"/>
+                    <Button x:Name="GitHub" FontSize="22" Background="#0020242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="80,-0,0,0" Height="50" Content="GitHub" Foreground="#BFC0CA" Grid.Row="2" FontFamily="Comic Sans MS" Click="GitHub_Click"/>
+                    <Button x:Name="Android" FontSize="22" Background="#0020242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="80,-0,0,0" Height="50" Content="Android порт" Foreground="#BFC0CA" Grid.Row="3" FontFamily="Comic Sans MS" Click="Android_Click"/>
+                    <Button x:Name="License" FontSize="22" Background="#0020242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="80,-0,0,0" Height="50" Content="Правовой аспект" Foreground="#BFC0CA" Grid.Row="4" FontFamily="Comic Sans MS" Click="License_Click"/>
+                    <Button x:Name="Creators" FontSize="22" Background="#0020242A" BorderBrush="{x:Null}"  HorizontalAlignment="Left" Margin="80,0,0,0" Height="50" Content="Создатели" Foreground="#BFC0CA" Grid.Row="5" FontFamily="Comic Sans MS" Click="Creators_Click"/>
                 </Grid>
             </Grid>
+            <Image x:Name="logo" Source="/Assets/rus_logo_mas.png" Width="260" Height="260" Margin="10,25,0,0" Stretch="Uniform" VerticalAlignment="Top" HorizontalAlignment="Left"/>
             <Button x:Name="DownloadButt" Width="235" Height="65" Content="Обновить" FontSize="24" Background="#FFFCD86E" BorderBrush="#00707070" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,30,30" Click="DownloadButt_Click"/>
             <TextBlock x:Name="DownloadData" Text="Data" Margin="334,630,300,40" FontSize="24" Foreground="#FF101010" Visibility="Hidden"/>
-            <ProgressBar x:Name="DownloadProgress" Value="45" VerticalAlignment="Center" Margin="334,650,300,0" Background="#FF424242" FontSize="22" Height="30">
+            <ProgressBar x:Name="DownloadProgress" Value="45" VerticalAlignment="Center" Margin="334,639,300,0" Background="#FF424242" FontSize="22" Height="30">
                 <ProgressBar.Foreground>
                     <LinearGradientBrush EndPoint="1,0">
                         <GradientStop Color="#FFFCD86E"/>

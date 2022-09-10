@@ -22,8 +22,10 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Toolkit.Uwp.Notifications;
 
 using static System.Net.Mime.MediaTypeNames;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace MASlauncher
 {
@@ -83,14 +85,14 @@ namespace MASlauncher
             masUpdater.IniName = "mas.ini";
             masUpdater.endsWitch = "Mod.zip\"";
 
-            CheckTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
+            //CheckTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
 
-            DownloadButt.Content = buttonText[type];
+            //DownloadButt.Content = buttonText[type];
 
             DownloadProgress.Value = 0;
             DownloadProgress.Visibility = Visibility.Hidden;
             //DownloadString.Content = downloadString;
-            DownloadButt.Content = buttonText[type];
+           // DownloadButt.Content = buttonText[type];
             translateUpdater.solicenBar = DownloadProgress;
             translateUpdater.solicenBarText = DownloadData;
 
@@ -105,6 +107,15 @@ namespace MASlauncher
                 });
             });
 
+            _ = Task.Run(async () =>
+            {
+                while (true)
+                {
+
+                    await CheckTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
+                    Task.Delay(300000).Wait();
+                }
+            });
         }
         private void DownloadButt_Click(object sender, RoutedEventArgs e)
         {
@@ -212,9 +223,18 @@ namespace MASlauncher
             {
                 Debug.WriteLine("New translate detected!");
                 string s = translateUpdater.UpdateDescription;
-                type = 1;
+                type = 1; 
+                new ToastContentBuilder()
+                    .AddArgument("action", "viewConversation")
+                    .AddArgument("conversationId", 9813)
+                    .AddText("Новая версия доступна!")
+                    .AddText("Зайдите в лаунчер и нажмите кнопку \"Обновить\"")
+                    .Show();
             }
-            DownloadButt.Content = buttonText[type];
+            Dispatcher.Invoke(() =>
+            {
+                DownloadButt.Content = buttonText[type];
+            });
         }
         async Task DownloadTranslateUpdate(string user, string repo, string path = "")
         {
@@ -470,6 +490,35 @@ namespace MASlauncher
 
             }
 
+        }
+        private void sidePanel_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            DoubleAnimation buttonAnimation = new DoubleAnimation();
+            buttonAnimation.From = sidePanel.ActualWidth;
+            buttonAnimation.To = 300;
+            buttonAnimation.Duration = TimeSpan.FromMilliseconds(200);
+            sidePanel.BeginAnimation(Grid.WidthProperty, buttonAnimation);
+            /*
+            DoubleAnimation fade = new DoubleAnimation();
+            fade.From = sidePanel.Opacity;
+            fade.To = 1;
+            fade.Duration = TimeSpan.FromMilliseconds(100);
+            sidePanel.BeginAnimation(OpacityProperty, fade);*/
+        }
+
+        private void sidePanel_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            DoubleAnimation buttonAnimation = new DoubleAnimation();
+            buttonAnimation.From = sidePanel.ActualWidth;
+            buttonAnimation.To = 90;
+            buttonAnimation.Duration = TimeSpan.FromMilliseconds(200);
+            sidePanel.BeginAnimation(Grid.WidthProperty, buttonAnimation);
+            /*
+            DoubleAnimation fade = new DoubleAnimation();
+            fade.From = sidePanel.Opacity;
+            fade.To = 0.5;
+            fade.Duration = TimeSpan.FromMilliseconds(100);
+            sidePanel.BeginAnimation(OpacityProperty, fade);*/
         }
 
         private void Discord_Click(object sender, RoutedEventArgs e)
