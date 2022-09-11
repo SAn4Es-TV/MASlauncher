@@ -76,6 +76,7 @@ namespace SolicenTEAM
                 }
             }
             string pathArchive = Application.StartupPath + "\\" + fileName;
+            Debug.WriteLine($"Path to Archive : {pathArchive}");
             if (debugEnabled) Debug.WriteLine($"Path to Archive : {pathArchive}");
             pathToArchive = pathArchive;
 

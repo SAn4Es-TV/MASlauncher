@@ -206,6 +206,7 @@ namespace MASlauncher
         }
         async Task CheckTranslateUpdate(string user, string repo, string path = "")
         {
+            Debug.WriteLine("-= Checking Translate Updates =-");
             if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini"))
                 CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
 
@@ -238,6 +239,7 @@ namespace MASlauncher
         }
         async Task DownloadTranslateUpdate(string user, string repo, string path = "")
         {
+            Debug.WriteLine("-= Downloading Translate =-");
             if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini"))
                 CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
 
@@ -533,13 +535,13 @@ namespace MASlauncher
 
         private void GitHub_Click(object sender, RoutedEventArgs e)
         {
-            GoToURL("https://github.com/DenisSolicen/Solicen-Projects");
+            GoToURL("https://github.com/DenisSolicen/MAS-Russifier-NEW");
 
         }
 
         private void Android_Click(object sender, RoutedEventArgs e)
         {
-            GoToURL("https://github.com/DenisSolicen/Solicen-Projects/releases");
+            GoToURL("https://discord.gg/4KKTDbtp6z");
 
         }
 
