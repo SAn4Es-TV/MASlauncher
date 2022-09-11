@@ -187,7 +187,7 @@ namespace MASlauncher
             proc.Verb = "runas";
 
             Process.Start(proc); // запускаем программу
-            this.Close();
+            //this.Close();
         }
         // Обновить перевод
         void UpdateTranslate()
@@ -197,7 +197,7 @@ namespace MASlauncher
             proc.WorkingDirectory = Environment.CurrentDirectory;
             proc.FileName = PathToSetup;
             proc.UseShellExecute = true;
-            proc.Arguments = " -silent -PATH:\"" + PathToMASExe + "\"";
+            proc.Arguments = " -offshort -silent -PATH:\"" + PathToMASExe + "\"";
             proc.Verb = "runas";
 
             Process.Start(proc); // запускаем программу
