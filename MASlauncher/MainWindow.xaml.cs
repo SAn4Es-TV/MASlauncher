@@ -119,7 +119,26 @@ namespace MASlauncher
                     Task.Delay(300000).Wait();
                 }
             });
+            Timer timer = new Timer();
+            timer.Interval = 5000;
+            timer.Tick += Timer_Tick;
+            timer.Start();
+            
         }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            var process = Process.GetProcesses().FirstOrDefault(p => p.ProcessName == "Setup");
+            if(process == null)
+            {
+                lockUnlockButtons(true);
+            }
+            else
+            {
+                lockUnlockButtons(false);
+            }
+        }
+
         private void DownloadButt_Click(object sender, RoutedEventArgs e)
         {
             switch (type)
@@ -190,7 +209,8 @@ namespace MASlauncher
             proc.Verb = "runas";
 
             Process.Start(proc); // запускаем программу
-            //this.Close();
+            if((bool)CloseWhenStart.IsChecked)
+                this.Close();
         }
         // Обновить перевод
         void UpdateTranslate()
@@ -269,7 +289,8 @@ namespace MASlauncher
         // Сохранить настройки
         void SaveSettings()
         {
-            settingsString = MASpath.FullName + '\n';
+            settingsString = MASpath.FullName + '\n' + 
+            CloseWhenStart.IsChecked + '\n';
             // полная перезапись файла
             using (StreamWriter writer = new StreamWriter(settingsPath, false))
             {
@@ -289,6 +310,7 @@ namespace MASlauncher
                     string[] data = text.Split('\n');
                     PathToMASFolder = data[0];
                     PathToMASExe = PathToMASFolder + @"\DDLC.exe";
+                    CloseWhenStart.IsChecked = bool.Parse(data[1]);
 
                     PathToDir.Text = PathToMASFolder;
                 }
@@ -392,11 +414,13 @@ namespace MASlauncher
                             File.Delete(System.Windows.Forms.Application.StartupPath + "\\translate.ini");
 
                         while (!masUpdater.readyToInstall) await Task.Delay(100);
+                        if ((bool)TranslateWhenReinstall.IsChecked)
+                        {
+                            DownloadTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
 
-                        DownloadTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
-
-                        while (!translateUpdater.readyToInstall) await Task.Delay(100);
-                        UpdateTranslate();
+                            while (!translateUpdater.readyToInstall) await Task.Delay(100);
+                            UpdateTranslate();
+                        }
                         lockUnlockButtons(true);
                     }
                     catch (Exception ex)

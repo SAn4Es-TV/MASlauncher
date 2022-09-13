@@ -56,7 +56,7 @@
                 </ProgressBar.Foreground>
             </ProgressBar>
         </Grid>
-        <Grid Margin="0,25,0,0" x:Name="Settings" Background="#FF1E1E1E" Visibility="Visible" >
+        <Grid Margin="0,25,0,0" x:Name="Settings" Background="#FF1E1E1E" Visibility="Hidden" >
             <hc:SideMenu x:Name="SideMenu" Width="250" HorizontalAlignment="Left" Background="#333" SelectionChanged="SideMenu_SelectionChanged">
                 <hc:SideMenuItem Margin="10,0,0,0" Header="Общие" FontSize="24" Background="#333"  Foreground="#FFFCD86E" Selected="SideMenuItem_Selected"/>
                 <!--<hc:SideMenuItem Margin="10,0,0,0" Header="Игра" FontSize="20" Background="#333" Foreground="#FFFCD86E"/>-->
@@ -72,7 +72,9 @@
                 <Button x:Name="OpenPersistent" FontSize="20" Height="40" Content="Открыть папку" Background="#f2d774" BorderBrush="#00707070" Margin="0,70,214,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="OpenPersistent_Click"/>
                 <TextBlock x:Name="ver" Margin="20,150,0,0" Text="Версия клиента: " Foreground="#f2d774" FontSize="24"/>
                 <Button x:Name="CheckUpdate" FontSize="20" Height="40" Content="Проверить обновления" Background="#f2d774" BorderBrush="#00707070" Margin="0,150,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="CheckUpdate_Click"/>
+                <CheckBox x:Name="CloseWhenStart" Content="Закрывать лаунчер после запуска игры" Foreground="#f2d774" FontSize="24" Margin="20,200,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
                 <Button x:Name="Reinstall" Height="50" FontSize="24" Content="Переустановить Monika After Story" Background="#f2d774" BorderBrush="#00707070" Margin="0,0,20,20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Click="Reinstall_ClickAsync"/>
+                <CheckBox x:Name="TranslateWhenReinstall" Content="Перевести после переустановки" Foreground="#f2d774" FontSize="24" Margin="20,0,0,30" VerticalAlignment="Bottom" HorizontalAlignment="Left" IsChecked="True" />
             </Grid>
         </Grid>
         <Grid Margin="0,25,0,0" x:Name="Box" Background="#d9333333" Visibility="Hidden">
