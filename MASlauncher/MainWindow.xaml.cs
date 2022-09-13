@@ -39,6 +39,8 @@ namespace MASlauncher
         public string PathToTranslate = System.Windows.Forms.Application.StartupPath + @"\";
         public string PathToMASFolder = "";
         public string PathToMASExe = "";
+        public string PathToPersistent = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\RenPy\Monika After Story";
+        public string PathToPersistentBackup = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\RenPy\MAS-Backup";
         public string downloadString = "";
         public string settingsString = "";
         public string[] buttonText = { "Установить", "Обновить", "Начать игру" };
@@ -97,6 +99,7 @@ namespace MASlauncher
             translateUpdater.solicenBarText = DownloadData;
 
             launcherUpdater.ExeFileName = "MASlauncher";
+            PersistentPath.Text = PathToPersistent;
             PathToDir.Text = PathToMASFolder;
             Task.Factory.StartNew(async () =>
             {
@@ -307,6 +310,20 @@ namespace MASlauncher
         {
             UpdateLauncherAsync();
 
+        }
+        private void DeletePersistent_Click(object sender, RoutedEventArgs e)
+        {
+            DirectoryInfo MASbackup = new DirectoryInfo(PathToPersistentBackup);
+            DirectoryInfo MASpersistent = new DirectoryInfo(PathToPersistent);
+            if(!MASbackup.Exists)
+                MASbackup.Create();
+            if(MASpersistent.Exists)
+                MASpersistent.MoveTo(MASbackup + @"\" + DateTime.Now.ToString("MM.dd.yyyy H-mm"));
+        }
+
+        private void OpenPersistent_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("explorer.exe", PathToPersistent.Replace("Monika After Story", ""));
         }
         private readonly System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
         private async void Reinstall_ClickAsync(object sender, RoutedEventArgs e)

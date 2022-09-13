@@ -10,12 +10,12 @@
         AllowsTransparency="True">
     <Grid>
         <Grid VerticalAlignment="Top" Height="25" Background="#FF20242A" MouseDown="Grid_MouseDown">
-                <!--<Image Source="/menu_new.png" HorizontalAlignment="Left" Margin="4,0,0,0" Width="20" Height="20"/>-->
+            <!--<Image Source="/menu_new.png" HorizontalAlignment="Left" Margin="4,0,0,0" Width="20" Height="20"/>-->
             <TextBlock Text="-Моника После Истории-" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#fff"/>
             <Button Content="⚙" Background="#FF20242A" BorderBrush="{x:Null}" Foreground="#fff" HorizontalAlignment="Right" Margin="0,0,55,0" Click="Button_Click_2"/>
             <Button Content="-" Background="#FF20242A" BorderBrush="{x:Null}" Foreground="#fff" HorizontalAlignment="Right" Margin="742,0,30,0" FontSize="14" FontWeight="Bold" FontStyle="Normal" Click="Button_Click"/>
             <Button Content="X" Background="#FF20242A" BorderBrush="{x:Null}" Foreground="#fff" HorizontalAlignment="Right" Click="Button_Click_1"/>
-            </Grid>
+        </Grid>
         <Grid Visibility="Visible">
             <Image x:Name="___Monika_png" Source="/Assets/monikaroomdaylight.jpg" Margin="0,25,0,0" Stretch="UniformToFill"/>
             <Grid Background="#ff20242A" Width="90" Height="730" VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="sidePanel" MouseEnter="sidePanel_MouseEnter" MouseLeave="sidePanel_MouseLeave">
@@ -56,18 +56,22 @@
                 </ProgressBar.Foreground>
             </ProgressBar>
         </Grid>
-        <Grid Margin="0,25,0,0" x:Name="Settings" Background="#FF1E1E1E" Visibility="Hidden" >
+        <Grid Margin="0,25,0,0" x:Name="Settings" Background="#FF1E1E1E" Visibility="Visible" >
             <hc:SideMenu x:Name="SideMenu" Width="250" HorizontalAlignment="Left" Background="#333" SelectionChanged="SideMenu_SelectionChanged">
                 <hc:SideMenuItem Margin="10,0,0,0" Header="Общие" FontSize="24" Background="#333"  Foreground="#FFFCD86E" Selected="SideMenuItem_Selected"/>
                 <!--<hc:SideMenuItem Margin="10,0,0,0" Header="Игра" FontSize="20" Background="#333" Foreground="#FFFCD86E"/>-->
             </hc:SideMenu>
             <Grid Margin="250,0,0,0" x:Name="MainSettings" Visibility="Visible">
                 <TextBlock Margin="20,10,0,0" Text="Папка с игрой:" Foreground="#f2d774" FontSize="24"/>
-                <TextBlock Margin="20,30,0,0" x:Name="PathToDir" Text="dsadas" Foreground="#f2d774" FontSize="24" Width="420" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40"/>
+                <TextBlock Margin="20,30,3,0" x:Name="PathToDir" Text="dsadas"  TextWrapping="Wrap" Foreground="#f2d774" FontSize="20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="600"/>
                 <Button x:Name="ChanceGameDir" FontSize="20" Height="40" Content="Изменить" Background="#f2d774" BorderBrush="#00707070" Margin="0,20,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="ChanceGameDir_Click"/>
                 <Button x:Name="OpenGameFolder" FontSize="20" Height="40" Content="Открыть папку с игрой" Background="#f2d774" BorderBrush="#00707070" Margin="0,20,140,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="OpenGameFolder_Click" />
-                <TextBlock x:Name="ver" Margin="20,70,0,0" Text="Версия клиента: " Foreground="#f2d774" FontSize="20"/>
-                <Button x:Name="CheckUpdate" FontSize="20" Height="40" Content="Проверить обновления" Background="#f2d774" BorderBrush="#00707070" Margin="0,70,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="CheckUpdate_Click"/>
+                <TextBlock Margin="20,70,0,0" Text="Папка с сохранениями: " Foreground="#f2d774" FontSize="24"/>
+                <TextBlock x:Name="PersistentPath" TextWrapping="Wrap" Margin="20,90,0,560" Text="выфвыф " Foreground="#f2d774" FontSize="20" Height="55" Width="600" HorizontalAlignment="Left"/>
+                <Button x:Name="DeletePersistent" FontSize="20" Height="40" Content="Удалить Persistent" Background="#f2d774" BorderBrush="#00707070" Margin="0,70,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="DeletePersistent_Click"/>
+                <Button x:Name="OpenPersistent" FontSize="20" Height="40" Content="Открыть папку" Background="#f2d774" BorderBrush="#00707070" Margin="0,70,214,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="OpenPersistent_Click"/>
+                <TextBlock x:Name="ver" Margin="20,150,0,0" Text="Версия клиента: " Foreground="#f2d774" FontSize="24"/>
+                <Button x:Name="CheckUpdate" FontSize="20" Height="40" Content="Проверить обновления" Background="#f2d774" BorderBrush="#00707070" Margin="0,150,20,0" VerticalAlignment="Top" HorizontalAlignment="Right" Click="CheckUpdate_Click"/>
                 <Button x:Name="Reinstall" Height="50" FontSize="24" Content="Переустановить Monika After Story" Background="#f2d774" BorderBrush="#00707070" Margin="0,0,20,20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Click="Reinstall_ClickAsync"/>
             </Grid>
         </Grid>
