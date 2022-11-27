@@ -119,6 +119,7 @@ namespace SolicenTEAM
 
             pathToArchive = pathArchive;
             readyToUpdate = true;
+            Debug.WriteLine("readyToUpdate => " + readyToUpdate);
         }
 
         public System.Windows.Controls.ProgressBar solicenBar;
@@ -149,7 +150,7 @@ namespace SolicenTEAM
                 await Task.Delay(10);
             }
 
-            if (debugEnabled) Debug.WriteLine("Extracting archive");
+            Debug.WriteLine("Extracting archive");
             var path = Application.StartupPath + "\\";
 
             _extractProcessValueMax = 0;
@@ -159,11 +160,11 @@ namespace SolicenTEAM
             {
                 if (!File.Exists(pathToArchive))
                 {
-                    if (debugEnabled) Debug.WriteLine("Archive in " + pathToArchive + " not found");
+                    Debug.WriteLine("Archive in " + pathToArchive + " not found");
                     return;
                 }
                 string extractPath = ExtractPath;
-                using (ZipFile zip = ZipFile.Read(pathToArchive))
+                using (Ionic.Zip.ZipFile zip = Ionic.Zip.ZipFile.Read(pathToArchive))
                 {
                     _extractProcessValueMax = zip.Entries.Count;
 
@@ -171,14 +172,14 @@ namespace SolicenTEAM
                     {
                         foreach (ZipEntry e in zip)
                         {
-                            if (debugEnabled) Debug.WriteLine(_extractProcessValue);
+                            Debug.WriteLine(_extractProcessValue + "/" + _extractProcessValueMax);
                             e.Extract(extractPath, ExtractExistingFileAction.OverwriteSilently);
                             _extractProcessValue += 1;
                         }
                     }
                     catch { }
                     File.WriteAllText(path + IniName, UpdateVersion);
-                    if (debugEnabled) Debug.WriteLine("Archive extracted to " + extractPath);
+                    Debug.WriteLine("Archive extracted to " + extractPath);
 
 
                 }
@@ -186,15 +187,16 @@ namespace SolicenTEAM
             }
             else
             {
-                if (debugEnabled) Debug.WriteLine("Create config");
+                Debug.WriteLine("Archive for updater");
+                Debug.WriteLine("Create config");
                 CreateConfig();
-                if (debugEnabled) Debug.WriteLine($"Create {IniName}");
+                Debug.WriteLine($"Create {IniName}");
                 var pathTo = Environment.CurrentDirectory + "\\";
                 File.WriteAllText(pathTo + IniName, UpdateVersion);
                 await Task.Delay(100);
-                if (debugEnabled) Debug.WriteLine("Starting Updater");
+                Debug.WriteLine("Starting Updater");
                 Process.Start("Updater.exe");
-                if (debugEnabled) Debug.WriteLine("Exiting");
+                Debug.WriteLine("Exiting");
                 Environment.Exit(0);
             }
             readyToInstall = true;

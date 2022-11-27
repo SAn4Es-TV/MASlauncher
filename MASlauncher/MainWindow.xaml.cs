@@ -16,6 +16,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Forms;
+using System.Drawing;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -26,6 +27,9 @@ using Microsoft.Toolkit.Uwp.Notifications;
 
 using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using Windows.UI.Xaml.Shapes;
+using Solicen;
+using NLog.Fluent;
 
 namespace MASlauncher
 {
@@ -46,6 +50,9 @@ namespace MASlauncher
         public string[] buttonText = { "Установить", "Обновить", "Начать игру" };
         public int type = 2;
         public bool settingsFlag = false;
+        public bool handHideFlag = false;
+        public bool secondErrorShow = false;
+        public string oldErrorText = "";
         DirectoryInfo MASpath;
         FileInfo exePath; 
         public static bool IsNight => DateTime.Now.Hour > 22 ||
@@ -63,14 +70,17 @@ namespace MASlauncher
 
         string ddlcLink = "https://drive.google.com/u/0/uc?id=1o6urVBdzI1K8KY_z_VrhaYqZZ-dUfZnq&export=download&confirm=t&uuid=108a5d75-09cd-422a-ac88-4ee057586531";
 
+        Logger logger = new Logger();
+        bool loggerRun = true;
+
         public MainWindow()
         {
             InitializeComponent();
+            //ImageSource ico = new BitmapImage(new Uri("pack://application:,,,/menu_new.png"));
+            //this.Icon = ico;
+            if (loggerRun) { logger.Start(); }
+            initializeImages();
             LoadSettings();
-            if (!IsNight)
-                ___Monika_png.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/monikaroomdaylight.jpg"));
-            else
-                ___Monika_png.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/monikaroomnight.png"));
             if (!String.IsNullOrWhiteSpace(PathToMASFolder))
             {
                 MASpath = new DirectoryInfo(PathToMASFolder);
@@ -94,10 +104,12 @@ namespace MASlauncher
             DownloadProgress.Value = 0;
             DownloadProgress.Visibility = Visibility.Hidden;
             //DownloadString.Content = downloadString;
-           // DownloadButt.Content = buttonText[type];
+            // DownloadButt.Content = buttonText[type];
             translateUpdater.solicenBar = DownloadProgress;
             translateUpdater.solicenBarText = DownloadData;
 
+            launcherUpdater.solicenBar = DownloadProgress;
+            launcherUpdater.solicenBarText = DownloadData;
             launcherUpdater.ExeFileName = "MASlauncher";
             PersistentPath.Text = PathToPersistent;
             PathToDir.Text = PathToMASFolder;
@@ -107,8 +119,11 @@ namespace MASlauncher
                 this.Dispatcher.Invoke(() =>
                 {
                     ver.Text = "Версия клиента: " + launcherUpdater.CurrentVersion.ToString();
+                    logger.Log("Проверка обновлений клиента завершена");
                 });
             });
+
+            UpdateLauncherAsync();
 
             _ = Task.Run(async () =>
             {
@@ -123,19 +138,171 @@ namespace MASlauncher
             timer.Interval = 5000;
             timer.Tick += Timer_Tick;
             timer.Start();
-            
-        }
 
+            System.Windows.Forms.NotifyIcon ni = new System.Windows.Forms.NotifyIcon();
+            ni.Icon = new System.Drawing.Icon("CustomIconWindows.ico");
+            ni.Visible = true;
+            ni.DoubleClick +=
+                delegate (object sender, EventArgs args)
+                {
+                    if (WindowState != System.Windows.WindowState.Minimized)
+                    {
+                        this.Hide();
+                        this.WindowState = WindowState.Minimized;
+                        handHideFlag = true;
+                    }
+                    else
+                    {
+                        this.Show();
+                        this.WindowState = WindowState.Normal;
+                    }
+                };
+            if (!String.IsNullOrEmpty(PathToMASFolder))
+            {
+                FileSystemWatcher watcher = new FileSystemWatcher(PathToMASFolder);
+                watcher.Changed += delegate(object sender, FileSystemEventArgs e)
+                {
+                    if (e.ChangeType != WatcherChangeTypes.Changed)
+                    {
+                        return;
+                    }
+                    if (e.FullPath.EndsWith("errors.txt"))
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            Stream myStream;
+                            using (myStream = File.Open(e.FullPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
+                            {
+                                StreamReader reader = new StreamReader(myStream);
+                                string text = reader.ReadToEnd();
+                                if (oldErrorText != oldErrorText || oldErrorText == "")
+                                {
+                                    Error error = new Error();
+                                    error.Show();
+                                    logger.Log("Произошла ошибка при запуске игры");
+                                }
+                                oldErrorText = text;
+                            }
+                        });
+
+                        send(PathToMASFolder + "/errors.txt", PathToMASFolder + "/traceback.txt", PathToMASFolder + "/log.txt");
+                    }
+                    if (e.FullPath.EndsWith("traceback.txt"))
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            Stream myStream;
+                            using (myStream = File.Open(e.FullPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
+                            {
+                                StreamReader reader = new StreamReader(myStream);
+                                string text = reader.ReadToEnd();
+                                if (oldErrorText != oldErrorText || oldErrorText == "")
+                                {
+                                    Error error = new Error();
+                                    error.Show();
+                                    logger.Log("Произошла ошибка при запуске игры");
+                                }
+                                oldErrorText = text;
+                            }
+                        });
+
+                        send(PathToMASFolder + "/errors.txt", PathToMASFolder + "/traceback.txt", PathToMASFolder + "/log.txt");
+                    }
+                };
+                watcher.Created += delegate (object sender, FileSystemEventArgs e)
+                {
+                    if (e.FullPath.EndsWith("errors.txt"))
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            Stream myStream;
+                            using (myStream = File.Open(e.FullPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
+                            {
+                                StreamReader reader = new StreamReader(myStream);
+                                string text = reader.ReadToEnd();
+                                if (oldErrorText != oldErrorText || oldErrorText == "")
+                                {
+                                    Error error = new Error();
+                                    error.Show();
+                                    logger.Log("Произошла ошибка при запуске игры");
+                                }
+                                oldErrorText = text;
+                            }
+                        });
+                        send(PathToMASFolder + "/errors.txt", PathToMASFolder + "/traceback.txt", PathToMASFolder + "/log.txt");
+                        //send(PathToMASFolder + "/errors.txt", PathToMASFolder + "/traceback.txt");
+                    }
+                    if (e.FullPath.EndsWith("traceback.txt"))
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            Stream myStream;
+                            using (myStream = File.Open(e.FullPath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
+                            {
+                                StreamReader reader = new StreamReader(myStream);
+                                string text = reader.ReadToEnd();
+                                if (oldErrorText != oldErrorText || oldErrorText == "")
+                                {
+                                    Error error = new Error();
+                                    error.Show();
+                                    logger.Log("Произошла ошибка при запуске игры");
+                                }
+                                oldErrorText = text;
+                            }
+                        });
+                        send(PathToMASFolder + "/errors.txt", PathToMASFolder + "/traceback.txt", PathToMASFolder + "/log.txt");
+                        //send(PathToMASFolder + "/errors.txt", PathToMASFolder + "/traceback.txt");
+                    }
+                };
+                watcher.IncludeSubdirectories = true;
+                watcher.EnableRaisingEvents = true;
+            }
+            //if(File.Exists(PathToMASFolder + "/errors.txt"))
+                //send(PathToMASFolder + "/errors.txt", PathToMASFolder + "/traceback.txt");
+        }
+        void initializeImages()
+        {
+            //if (!IsNight)
+            try
+            {
+                ___Monika_png.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/monikaroomdaylight.jpg"));
+            }
+            catch
+            {
+                logger.Log("Ошибка с дневным фоном!");
+            }
+            try
+            {
+                ___Monika_png.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/monikaroomnight.png"));
+            }
+            catch
+            {
+                logger.Log("Ошибка с ночным фоном!");
+            }
+            //else
+            logo.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/rus_logo_mas.png"));
+            img1.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/4945914.png"));
+            img2.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/1660165.png"));
+            img3.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/4926624.png"));
+            img4.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/4926624.png"));
+            img5.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/2639683.png"));
+            img6.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/151776.png"));
+
+        }
         private void Timer_Tick(object sender, EventArgs e)
         {
             var process = Process.GetProcesses().FirstOrDefault(p => p.ProcessName == "Setup");
-            if(process == null)
-            {
+            var ddlcProcess = Process.GetProcesses().FirstOrDefault(p => p.ProcessName == "DDLC");
+            if (process == null)
                 lockUnlockButtons(true);
-            }
             else
-            {
                 lockUnlockButtons(false);
+
+            if (ddlcProcess == null && !handHideFlag)
+            {
+                if(this.Visibility == Visibility.Hidden)
+                    this.Show();
+                this.WindowState = WindowState.Normal;
             }
         }
 
@@ -178,8 +345,9 @@ namespace MASlauncher
                         PathToMASExe = PathToMASFolder + @"\DDLC.exe";
                         PathToDir.Text = PathToMASFolder;
                         SaveSettings();
-                        DownloadTranslate();
-                        type = 2;
+                        //DownloadTranslate();
+                        type = 1;
+                        logger.Log("Папка MAS выбрана");
                     }
                     else
                     {
@@ -192,6 +360,8 @@ namespace MASlauncher
         async void DownloadTranslate()
         {
             lockUnlockButtons(false);
+            if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\Setup.bin"))
+                File.Move(System.Windows.Forms.Application.StartupPath + "\\Setup.bin", System.Windows.Forms.Application.StartupPath + "\\Setup.bak");
             DownloadTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
             while (!translateUpdater.readyToInstall) await Task.Delay(100);
             UpdateTranslate();
@@ -201,6 +371,7 @@ namespace MASlauncher
         void RunGame()
         {
 
+            logger.Log("Запуск игры");
             ProcessStartInfo proc = new ProcessStartInfo();
             proc.UseShellExecute = true;
             proc.WorkingDirectory = Environment.CurrentDirectory;
@@ -209,12 +380,16 @@ namespace MASlauncher
             proc.Verb = "runas";
 
             Process.Start(proc); // запускаем программу
-            if((bool)CloseWhenStart.IsChecked)
-                this.Close();
+            handHideFlag = false;
+            this.Hide();
+
+            /*if((bool)CloseWhenStart.IsChecked)
+                this.Close();*/
         }
         // Обновить перевод
         void UpdateTranslate()
         {
+            logger.Log("Запуск переводчика");
             ProcessStartInfo proc = new ProcessStartInfo();
             proc.UseShellExecute = true;
             proc.WorkingDirectory = Environment.CurrentDirectory;
@@ -230,6 +405,7 @@ namespace MASlauncher
         async Task CheckTranslateUpdate(string user, string repo, string path = "")
         {
             Debug.WriteLine("-= Checking Translate Updates =-");
+            logger.Log("Проверяю обновления перевода");
             if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini"))
                 CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
 
@@ -259,10 +435,12 @@ namespace MASlauncher
             {
                 DownloadButt.Content = buttonText[type];
             });
+            logger.Log("Проверка обновлений перевода завершена!");
         }
         async Task DownloadTranslateUpdate(string user, string repo, string path = "")
         {
             Debug.WriteLine("-= Downloading Translate =-");
+            logger.Log("Загружаю перевод");
             if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini"))
                 CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
 
@@ -284,13 +462,14 @@ namespace MASlauncher
                 translateUpdater.DownloadUpdate("DenisSolicen", "MAS-Russifier-NEW");
                 translateUpdater.ExctractArchive(path);
             }
+            logger.Log("Перевод успешно загружен!");
         }
 
         // Сохранить настройки
         void SaveSettings()
         {
-            settingsString = MASpath.FullName + '\n' + 
-            CloseWhenStart.IsChecked + '\n';
+            settingsString = MASpath.FullName + '\n';
+            //CloseWhenStart.IsChecked + '\n';
             // полная перезапись файла
             using (StreamWriter writer = new StreamWriter(settingsPath, false))
             {
@@ -310,9 +489,11 @@ namespace MASlauncher
                     string[] data = text.Split('\n');
                     PathToMASFolder = data[0];
                     PathToMASExe = PathToMASFolder + @"\DDLC.exe";
-                    CloseWhenStart.IsChecked = bool.Parse(data[1]);
+                    /*if (data[1] != null && data[1] != "\r")
+                        CloseWhenStart.IsChecked = bool.Parse(data[1]);*/
 
                     PathToDir.Text = PathToMASFolder;
+                    logger.Log("Настройки успешно загружены");
                 }
             }
         }
@@ -330,7 +511,7 @@ namespace MASlauncher
         // Проверить обновления клиента
         private void CheckUpdate_Click(object sender, RoutedEventArgs e)
         {
-            UpdateLauncherAsync();
+            UpdateLauncherAsync(true);
 
         }
         private void DeletePersistent_Click(object sender, RoutedEventArgs e)
@@ -366,9 +547,10 @@ namespace MASlauncher
                             Debug.WriteLine("DDLC archive in " + pathToArchive + " not found");
                             return;
                         }
+
                         lockUnlockButtons(false);
                         string extractPath = PathToMASFolder;
-                        using (ZipFile zip = ZipFile.Read(pathToArchive))
+                        using (Ionic.Zip.ZipFile zip = Ionic.Zip.ZipFile.Read(pathToArchive))
                         {
                             try
                             {
@@ -441,23 +623,33 @@ namespace MASlauncher
             }
         }
 
-        public async Task UpdateLauncherAsync()
+        public async Task UpdateLauncherAsync(bool showMessage = false)
         {
             await launcherUpdater.CheckUpdate("SAn4Es-TV", "MASlauncher");
+            Debug.WriteLine("-= Checking launcher Updates =-");
+            Debug.WriteLine("This launcher version: " + launcherUpdater.CurrentVersion);
+            Debug.WriteLine("New launcher version: " + launcherUpdater.UpdateVersion);
             if (launcherUpdater.UpdateVersion == launcherUpdater.CurrentVersion && launcherUpdater.UpdateVersion != "")
             {
-                System.Windows.Forms.MessageBox.Show("Установлена новейшая версия програмного обеспечения!");
+                if(showMessage)
+                    System.Windows.Forms.MessageBox.Show("Установлена новейшая версия програмного обеспечения!");
 
             }
             else
             {
-                //Debug.WriteLine(launcherUpdater.UpdateDescription);
-                //Debug.WriteLine(launcherUpdater.CurrentVersion);
-                //Debug.WriteLine(launcherUpdater.UpdateVersion);
+                System.Windows.Forms.MessageBox.Show("Вышло обновление лаунчера");
                 if (launcherUpdater.UpdateVersion != "")
                 { await launcherUpdater.CheckUpdate("SAn4Es-TV", "MASlauncher"); }
 
                 launcherUpdater.DownloadUpdate(launcherUpdater.gitUser, launcherUpdater.gitRepo);
+
+                while (!launcherUpdater.readyToUpdate)
+                {
+                    await Task.Delay(100);
+                    Debug.WriteLine(launcherUpdater.readyToUpdate);
+                }
+
+                Debug.WriteLine("-= Extract Archive =-");
                 launcherUpdater.ExctractArchive(System.Windows.Forms.Application.StartupPath + "\\", true);
             }
         }
@@ -497,6 +689,7 @@ namespace MASlauncher
                     Settings.Visibility = Visibility.Hidden;
                 };
                 Settings.BeginAnimation(OpacityProperty, end);
+                SaveSettings();
             }
         }
 
@@ -638,10 +831,54 @@ namespace MASlauncher
         #endregion
         void lockUnlockButtons(bool flag)
         {
+            Debug.WriteLine(flag);
                 DownloadButt.IsEnabled = flag;
                 CheckUpdate.IsEnabled = flag;
                 Reinstall.IsEnabled = flag;
         }
 
+        void send(string pathToTraceback, string pathToError, string pathToLog)
+        {
+            string userName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+            var plainTextBytes = Convert.ToBase64String(Encoding.UTF8.GetBytes(userName));
+            string themeName = "Ошибка приложения | UID:" + plainTextBytes;
+
+            // Создаем новый экземпляр настроек почты, работающий независимо от логгера
+            var email = UIExceptionHandlerWinForms.UIException.Email(
+                "smtp.gmail.com", 587, "ebzzwqzyawfcuesx", "lilmonix82", "sanes328@gmail.com",
+                "lilmonix82@gmail.com", "Ошибка приложения"); 
+            var email1 = UIExceptionHandlerWinForms.UIException.Email(
+                "smtp.gmail.com", 587, "ebzzwqzyawfcuesx", "lilmonix82", "solicenteam@gmail.com",
+                "lilmonix82@gmail.com", "Ошибка приложения");
+
+            // Добавляем к письму файл traceback или лог от MAS, можно добавить сколько угодно файлов.
+            if (File.Exists(pathToTraceback))
+                UIExceptionHandlerWinForms.UIException.AttachFile(pathToTraceback);
+            if (File.Exists(pathToError))
+                UIExceptionHandlerWinForms.UIException.AttachFile(pathToError);
+            //if (File.Exists(pathToLog))
+            //    UIExceptionHandlerWinForms.UIException.AttachFile(pathToLog);
+
+            // Еще можем сделать так, то есть добавить скриншот открытого приложения MAS с ошибкой если в traceback или логе будет что-то не понятно, у нас будет дополнительная информация, ничего лишнего захватить не должен
+            //UIExceptionHandlerWinForms.UIException.ScreenshotWindow("DDLC");
+
+            //var log = UIExceptionHandlerWinForms.UIException.GetLastFileLogPath();
+            //UIExceptionHandlerWinForms.UIException.AttachLog(log);
+
+            // Отправляем письмо
+            UIExceptionHandlerWinForms.UIException.SendMail(email, "UID: " + plainTextBytes + ". \nДержи файлы с ошибками", themeName);
+
+            // Добавляем к письму файл traceback или лог от MAS, можно добавить сколько угодно файлов.
+            if (File.Exists(pathToTraceback))
+                UIExceptionHandlerWinForms.UIException.AttachFile(pathToTraceback);
+            if (File.Exists(pathToError))
+                UIExceptionHandlerWinForms.UIException.AttachFile(pathToError);
+
+            UIExceptionHandlerWinForms.UIException.SendMail(email1, "UID: " + plainTextBytes + ". \nДержи файлы с ошибками", themeName);
+        }
+
+        private void CloseWhenStart_Checked(object sender, RoutedEventArgs e)
+        {
+        }
     }
 }
