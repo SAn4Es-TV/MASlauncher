@@ -12,69 +12,34 @@ namespace SolicenTEAM
 {
     class Updater
     {
-        public string gitUser;
-        public string gitRepo;
-        public string browserURL = "";
-        public string pathToArchive = "";
-        public bool readyToUpdate = false;
-        public bool readyToInstall = false;
-        public string UpdateVersion = "";
-        public string CurrentVersion = "";
-        public string UpdateDescription = "";
-        public string responseString = "";
-        public bool UpdateDescriptionReady;
-        public bool debugEnabled = false;
+        private string _gitUser, _gitRepo, _iniName = "version.ini";
+        public string createdAt, publishAt;
 
-        public string ExeFileName = "";
-        public string IgnoreFiles = "";
+        public string browserURL = "", pathToArchive = "", endsWitch = "";
 
-        public string IniName = "version.ini";
+        public bool readyToUpdate = false, readyToInstall = false;
+        public bool UpdateDescriptionReady, debugEnabled = true;
+
+        public string UpdateVersion = "", CurrentVersion = "", UpdateDescription = "";     
+        public string ExeFileName = "", IgnoreFiles = "";
 
         public int _downloadProcessValue = 0;
         public int _extractProcessValue = 0;
         public int _extractProcessValueMax = 0;
 
-        public string endsWitch = "";
-
-        public async void DownloadUpdate(string gitUsername, string gitRepo)
+        private string _response = "";
+        private GitFile gitFile;
+        public Updater(string gitUser, string gitRepo, string iniName = "version.ini")
         {
-            Regex regexRegular = new Regex("\".*?.zip\"", RegexOptions.Multiline);
-            var matches = regexRegular.Matches(responseString);
-            var tempItem = "";
-            var fileName = "";
+            _gitUser = gitUser;
+            _gitRepo = gitRepo;
+            _iniName = iniName;
+        }
 
-            if (browserURL == "")
-            {
-
-                foreach (var item in matches)
-                {
-                    if(endsWitch != "")
-                    {
-                        if (!item.ToString().EndsWith(endsWitch))
-                            continue;
-                    }
-                    await Task.Delay(1);
-                    if (item.ToString().StartsWith("\"browser"))
-                    {
-                        tempItem = item.ToString();
-                        fileName = item.ToString().Split('/')[item.ToString().Split('/').Length - 1].Replace("\"", "");
-                        if (debugEnabled) Debug.WriteLine("File : " + fileName);
-                    }
-                }
-
-                regexRegular = new Regex("\".*?\"", RegexOptions.Multiline);
-                matches = regexRegular.Matches(tempItem);
-
-                foreach (var item in matches)
-                {
-                    await Task.Delay(1);
-                    if (item.ToString().StartsWith("\"https"))
-                    {
-                        if (debugEnabled) Debug.WriteLine(item);
-                        browserURL = item.ToString().Replace("\"", "");
-                    }
-                }
-            }
+        public async void DownloadUpdate()
+        {
+            if (gitFile == null) return;
+            var fileName = gitFile.downloadURL.Split('/')[gitFile.downloadURL.Split('/').Length - 1].Replace("\"", "");
             string pathArchive = Application.StartupPath + "\\" + fileName;
             Debug.WriteLine($"Path to Archive : {pathArchive}");
             if (debugEnabled) Debug.WriteLine($"Path to Archive : {pathArchive}");
@@ -96,26 +61,6 @@ namespace SolicenTEAM
             {
                 if (debugEnabled) Debug.WriteLine(ex);
             }
-
-
-            /*
-            // Продолжает попытки скачать файл если выбивает ошибку пути.
-            for (int i = 0; i < 10; i++)
-            {
-                await Task.Delay(1);
-                try
-                {
-                    if (File.Exists(pathArchive)) { break; }
-                    webClient.DownloadFile(browserURL, pathArchive);
-                }
-                catch
-                {
-                    await Task.Delay(30000);
-                    continue;
-                }
-            }
-            */
-
 
             pathToArchive = pathArchive;
             readyToUpdate = true;
@@ -178,7 +123,7 @@ namespace SolicenTEAM
                         }
                     }
                     catch { }
-                    File.WriteAllText(path + IniName, UpdateVersion);
+                    File.WriteAllText(path + _iniName, UpdateVersion);
                     Debug.WriteLine("Archive extracted to " + extractPath);
 
 
@@ -190,9 +135,9 @@ namespace SolicenTEAM
                 Debug.WriteLine("Archive for updater");
                 Debug.WriteLine("Create config");
                 CreateConfig();
-                Debug.WriteLine($"Create {IniName}");
+                Debug.WriteLine($"Create {_iniName}");
                 var pathTo = Environment.CurrentDirectory + "\\";
-                File.WriteAllText(pathTo + IniName, UpdateVersion);
+                File.WriteAllText(pathTo + _iniName, UpdateVersion);
                 await Task.Delay(100);
                 Debug.WriteLine("Starting Updater");
                 Process.Start("Updater.exe");
@@ -207,25 +152,13 @@ namespace SolicenTEAM
         public async Task GetUpdateVersion()
         {
             if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable()) { return; }
-            if (responseString == "") { ResponseStringAsync(); }
+            if (_response == "") { ResponseStringAsync(); }
             await Task.Delay(1000);
 
-            Regex regexRegular = new Regex("\".*?\"", RegexOptions.Multiline);
-            var matches = regexRegular.Matches(responseString);
-            var tempItem = "";
-
-            foreach (var item in matches)
-            {
-                if (item.ToString().StartsWith("\"v"))
-                {
-                    tempItem = item.ToString().Replace("v", "");
-                    if (debugEnabled) Debug.WriteLine(item);
-                }
-            }
-
-            if (debugEnabled) Debug.WriteLine(tempItem.ToString().Replace("\"", ""), false);
+            GitFile file = new GitFile(_response);
+            if (debugEnabled) Debug.WriteLine(file.version, false);
             await Task.Delay(100);
-            GetCurrentVersion(tempItem.ToString().Replace("\"", ""), false);
+            GetCurrentVersion(file.version, false);
             await Task.Delay(100);
             if (UpdateDescription == "") { GetUpdateDescription(); }
         }
@@ -243,22 +176,27 @@ namespace SolicenTEAM
                 try
                 {
                     if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable()) { await Task.Delay(100); continue; }
-                    if (responseString != "") { break; }
-                    var resultURL = "https://api.github.com/repos/" + gitUser + "/" + gitRepo + "/releases/latest";
-                    responseString = await client.GetStringAsync(resultURL);
-                    if (debugEnabled) Debug.WriteLine(responseString);
-                    if (responseString != "") { GetUpdateVersion(); }
+                    if (_response != "") { break; }
+                    var resultURL = $"https://api.github.com/repos/" + $"{this._gitUser}/{this._gitRepo}" + "/releases/latest";
+                    _response = await client.GetStringAsync(resultURL);
+                    if (debugEnabled) Debug.WriteLine(_response);
+                    if (_response != "") { await GetUpdateVersion(); }
+                    await Task.Delay(3400);
                 }
                 catch (Exception e)
                 {
+                    if (e.Message == "Response status code does not indicate success: 403 (rate limit exceeded).")
+                        break;
                     x++;
                     if (debugEnabled) Debug.WriteLine(e.Message);
                     if (debugEnabled) Debug.WriteLine("Количество попыток:  " + x);
+                    await Task.Delay(3400);
                     continue;
                 }
             }
 
-
+            if (_response == "") return;
+            gitFile = new GitFile(_response);
         }
 
         public async void GetUpdateDescription()
@@ -267,11 +205,11 @@ namespace SolicenTEAM
 
 
             Regex regexRegular = new Regex("\".*?\"", RegexOptions.Multiline);
-            var matches = regexRegular.Matches(responseString);
+            var matches = regexRegular.Matches(_response);
             var tempItem = "";
             int x = 1;
 
-            if (responseString == "") { return; }
+            if (_response == "") { return; }
             if (UpdateVersion == "")
             {
                 for (int i = 0; i < x; i++)
@@ -282,9 +220,9 @@ namespace SolicenTEAM
                 }
             }
 
-            foreach (string str2 in responseString.Split(','))
+            foreach (string str2 in _response.Split(','))
             {
-                if (str2 == responseString.Split(',')[responseString.Split(',').Length - 1])
+                if (str2 == _response.Split(',')[_response.Split(',').Length - 1])
                 {
                     string pattern = @"\r\n";
                     if (debugEnabled) Debug.WriteLine(str2.ToString());
@@ -348,7 +286,7 @@ namespace SolicenTEAM
 
         public void ReselAll()
         {
-            responseString = "";
+            _response = "";
             browserURL = "";
             _downloadProcessValue = 0;
             _extractProcessValue = 0;
@@ -361,21 +299,21 @@ namespace SolicenTEAM
         public async void InstallUpdate(string ExtractPath)
         {
             await Task.Delay(10);
-            DownloadUpdate(gitUser, gitRepo); ExctractArchive(ExtractPath);
+            DownloadUpdate(); ExctractArchive(ExtractPath);
         }
 
         public async void GetCurrentVersion(string updateVersion, bool autoDownloadUpdate)
         {
             var path = Application.StartupPath + "\\";
-            if (File.Exists(path + IniName))
+            if (File.Exists(path + _iniName))
             {
-                string version = File.ReadAllText(path + IniName);
+                string version = File.ReadAllText(path + _iniName);
                 CurrentVersion = version;
                 if (updateVersion != version)
                 {
                     //Если версия обновления не совпадает с текущей версией, то приготовиться к обновлению
                     await Task.Delay(100);
-                    if (autoDownloadUpdate) DownloadUpdate(gitUser, gitRepo);
+                    if (autoDownloadUpdate) DownloadUpdate();
 
                     readyToUpdate = true;
                     UpdateVersion = updateVersion;
@@ -389,8 +327,8 @@ namespace SolicenTEAM
             else
             {
                 //Если файла не существует, создает его и записывает нулевую версию программы
-                File.WriteAllText(path + IniName, "1.0.0");
-                if (autoDownloadUpdate) DownloadUpdate(gitUser, gitRepo);
+                File.WriteAllText(path + _iniName, "1.0.0");
+                if (autoDownloadUpdate) DownloadUpdate();
 
             }
         }
@@ -404,15 +342,12 @@ namespace SolicenTEAM
             }
         }
 
-        public async Task CheckUpdate(string GitUsername, string GitRepo)
+        public async Task CheckUpdate()
         {
-            if (File.Exists(Application.StartupPath + "\\" + IniName))
-                CurrentVersion = File.ReadAllText(Application.StartupPath + "\\" + IniName);
+            if (File.Exists(Application.StartupPath + "\\" + _iniName))
+                CurrentVersion = File.ReadAllText(Application.StartupPath + "\\" + _iniName);
 
             await Task.Delay(100);
-            gitUser = GitUsername;
-            gitRepo = GitRepo;
-
             await GetUpdateVersion();
             await Task.Delay(10000);
             CurrentVersion = File.ReadAllText
@@ -425,6 +360,40 @@ namespace SolicenTEAM
                 //readyToUpdate = true;
             }
 
+        }
+    }
+
+    class GitFile
+    {
+        public string downloadURL = "";
+        public string name;
+        public string version;
+        public string createdAt;
+        public string publishedAt;
+
+        public GitFile(string response)
+        {
+            Get(response);
+        }
+
+        public void Get(string response)
+        {
+            Regex regex = new Regex("(\".*?\":.*)(,)?", RegexOptions.Multiline);
+            var collection = regex.Matches(response);
+
+            try
+            {
+                name = Solicen.EX.RegexHelper.MatchToString(collection, "\"name\"").Split(':')[1].Trim(' ').Trim('\"');
+                downloadURL = Solicen.EX.RegexHelper.MatchToString(collection, "browser_download_url").Split(':')[1].Trim(' ').Trim('\"');
+                version = Solicen.EX.RegexHelper.MatchToString(collection, "tag_name").Split(':')[1].Trim(' ').Trim('\"');
+                createdAt = Solicen.EX.RegexHelper.MatchToString(collection, "created_at").Split(':')[1].Trim(' ').Trim('\"');
+                publishedAt = Solicen.EX.RegexHelper.MatchToString(collection, "published_at").Split(':')[1].Trim(' ').Trim('\"');
+            }
+            catch
+            {
+                // Возникла ошибка при парсинге Гита.
+                return;
+            }
         }
     }
 

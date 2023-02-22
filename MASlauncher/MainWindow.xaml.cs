@@ -38,9 +38,11 @@ namespace MASlauncher
     /// </summary>
     public partial class MainWindow : System.Windows.Window
     {
-        public string settingsPath = System.Windows.Forms.Application.StartupPath + @"\Settings.txt";
-        public string PathToSetup = System.Windows.Forms.Application.StartupPath + @"\Setup.exe";
-        public string PathToTranslate = System.Windows.Forms.Application.StartupPath + @"\";
+        private static string StartupPath = System.Windows.Forms.Application.StartupPath;
+
+        public string settingsPath = StartupPath + @"\Settings.txt";
+        public string PathToSetup = StartupPath + @"\Setup.exe";
+        public string PathToTranslate = StartupPath + @"\";
         public string PathToMASFolder = "";
         public string PathToMASExe = "";
         public string PathToPersistent = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\RenPy\Monika After Story";
@@ -64,9 +66,9 @@ namespace MASlauncher
         public DoubleAnimation _start;  // Анимация запуска
         public DoubleAnimation _quit;   // Анимация выхода
 
-        SolicenTEAM.Updater launcherUpdater = new SolicenTEAM.Updater();
-        SolicenTEAM.Updater translateUpdater = new SolicenTEAM.Updater();
-        SolicenTEAM.Updater masUpdater = new SolicenTEAM.Updater();
+        SolicenTEAM.Updater launcherUpdater = new SolicenTEAM.Updater("SAn4Es-TV", "MASlauncher");
+        SolicenTEAM.Updater translateUpdater = new SolicenTEAM.Updater("DenisSolicen", "MAS-Russifier-NEW", "translate.ini");
+        SolicenTEAM.Updater masUpdater = new SolicenTEAM.Updater("Monika-After-Story", "MonikaModDev", "mas.ini");
 
         string ddlcLink = "https://drive.google.com/u/0/uc?id=1o6urVBdzI1K8KY_z_VrhaYqZZ-dUfZnq&export=download&confirm=t&uuid=108a5d75-09cd-422a-ac88-4ee057586531";
 
@@ -91,10 +93,7 @@ namespace MASlauncher
             {
                 type = 0;
             }
-            translateUpdater.IniName = "translate.ini";
 
-            translateUpdater.IniName = "translate.ini";
-            masUpdater.IniName = "mas.ini";
             masUpdater.endsWitch = "Mod.zip\"";
 
             //CheckTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
@@ -115,7 +114,7 @@ namespace MASlauncher
             PathToDir.Text = PathToMASFolder;
             Task.Factory.StartNew(async () =>
             {
-                    await launcherUpdater.CheckUpdate("SAn4Es-TV", "MASlauncher");
+                    await launcherUpdater.CheckUpdate();
                 this.Dispatcher.Invoke(() =>
                 {
                     ver.Text = "Версия клиента: " + launcherUpdater.CurrentVersion.ToString();
@@ -265,7 +264,7 @@ namespace MASlauncher
             //if (!IsNight)
             try
             {
-                ___Monika_png.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/monikaroomdaylight.jpg"));
+                ___Monika_png.Source = new BitmapImage(new Uri(StartupPath + "/Assets/monikaroomdaylight.jpg"));
             }
             catch
             {
@@ -273,20 +272,20 @@ namespace MASlauncher
             }
             try
             {
-                ___Monika_png.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/monikaroomnight.png"));
+                ___Monika_png.Source = new BitmapImage(new Uri(StartupPath + "/Assets/monikaroomnight.png"));
             }
             catch
             {
                 logger.Log("Ошибка с ночным фоном!");
             }
             //else
-            logo.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/rus_logo_mas.png"));
-            img1.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/4945914.png"));
-            img2.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/1660165.png"));
-            img3.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/4926624.png"));
-            img4.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/4926624.png"));
-            img5.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/2639683.png"));
-            img6.Source = new BitmapImage(new Uri(System.Windows.Forms.Application.StartupPath + "/Assets/151776.png"));
+            logo.Source = new BitmapImage(new Uri(StartupPath + "/Assets/rus_logo_mas.png"));
+            img1.Source = new BitmapImage(new Uri(StartupPath + "/Assets/4945914.png"));
+            img2.Source = new BitmapImage(new Uri(StartupPath + "/Assets/1660165.png"));
+            img3.Source = new BitmapImage(new Uri(StartupPath + "/Assets/4926624.png"));
+            img4.Source = new BitmapImage(new Uri(StartupPath + "/Assets/4926624.png"));
+            img5.Source = new BitmapImage(new Uri(StartupPath + "/Assets/2639683.png"));
+            img6.Source = new BitmapImage(new Uri(StartupPath + "/Assets/151776.png"));
 
         }
         private void Timer_Tick(object sender, EventArgs e)
@@ -360,8 +359,8 @@ namespace MASlauncher
         async void DownloadTranslate()
         {
             lockUnlockButtons(false);
-            if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\Setup.bin"))
-                File.Move(System.Windows.Forms.Application.StartupPath + "\\Setup.bin", System.Windows.Forms.Application.StartupPath + "\\Setup.bak");
+            if (File.Exists(StartupPath + "\\Setup.bin"))
+                File.Move(StartupPath + "\\Setup.bin", StartupPath + "\\Setup.bak");
             DownloadTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
             while (!translateUpdater.readyToInstall) await Task.Delay(100);
             UpdateTranslate();
@@ -395,27 +394,28 @@ namespace MASlauncher
             proc.WorkingDirectory = Environment.CurrentDirectory;
             proc.FileName = PathToSetup;
             proc.UseShellExecute = true;
-            proc.Arguments = " -offshort -silent -PATH:\"" + PathToMASExe + "\"";
+            proc.Arguments = $" -offshort -silent -PATH:\"{PathToMASExe}\"";
             proc.Verb = "runas";
 
             Process.Start(proc); // запускаем программу
             type = 2;
             DownloadButt.Content = buttonText[type];
         }
+
         async Task CheckTranslateUpdate(string user, string repo, string path = "")
         {
             Debug.WriteLine("-= Checking Translate Updates =-");
             logger.Log("Проверяю обновления перевода");
-            if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini"))
-                CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
+            if (File.Exists(StartupPath + "\\" + "translate.ini"))
+                CurrentVersion = File.ReadAllText(StartupPath + "\\" + "translate.ini");
 
             await Task.Delay(10);
-            translateUpdater.gitUser = user;
-            translateUpdater.gitRepo = repo;
+
+            
 
             await translateUpdater.GetUpdateVersion();
             await Task.Delay(10);
-            CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
+            CurrentVersion = File.ReadAllText(StartupPath + "\\" + "translate.ini");
 
             Debug.WriteLine("This translate version: " + CurrentVersion);
             Debug.WriteLine("New translate version: " + translateUpdater.UpdateVersion);
@@ -441,16 +441,15 @@ namespace MASlauncher
         {
             Debug.WriteLine("-= Downloading Translate =-");
             logger.Log("Загружаю перевод");
-            if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini"))
-                CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
+            if (File.Exists(StartupPath + "\\" + "translate.ini"))
+                CurrentVersion = File.ReadAllText(StartupPath + "\\" + "translate.ini");
 
             await Task.Delay(10);
-            translateUpdater.gitUser = user;
-            translateUpdater.gitRepo = repo;
 
+            
             await translateUpdater.GetUpdateVersion();
             await Task.Delay(10);
-            CurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "translate.ini");
+            CurrentVersion = File.ReadAllText(StartupPath + "\\" + "translate.ini");
 
             Debug.WriteLine("This translate version: " + CurrentVersion);
             Debug.WriteLine("New translate version: " + translateUpdater.UpdateVersion);
@@ -459,7 +458,7 @@ namespace MASlauncher
                 while (!translateUpdater.UpdateDescriptionReady) await Task.Delay(100);
                 string s = translateUpdater.UpdateDescription;
                 translateUpdater.solicenBar = DownloadProgress;
-                translateUpdater.DownloadUpdate("DenisSolicen", "MAS-Russifier-NEW");
+                translateUpdater.DownloadUpdate();
                 translateUpdater.ExctractArchive(path);
             }
             logger.Log("Перевод успешно загружен!");
@@ -531,11 +530,20 @@ namespace MASlauncher
         private readonly System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
         private async void Reinstall_ClickAsync(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\ddlc-win.zip"))
+            string pathToArchive = StartupPath + "\\ddlc-win.zip";
+            if (File.Exists(StartupPath + "\\ddlc-win.zip"))
             {
-                if (File.Exists(PathToMASFolder + "\\game\\script-topics.rpyc"))
+                // Дополнительная проверка на соотвествие архива ddlc-win.zip на оригинальность. //by Solicen
+                if (!Solicen.EX.Zip.FileExist(pathToArchive, "fonts.rpa") && !Solicen.EX.Zip.FileExist(pathToArchive, "firstrun"))
                 {
-                    string pathToArchive = System.Windows.Forms.Application.StartupPath + "\\ddlc-win.zip";
+                    System.Windows.MessageBox.Show("Обнаружен не оригинальный архив ddlc-win.zip, переустановка невозможна." +
+                    "\nПожалуйста скачайте официальную копию DDLC с сайта ddlc.moe (не Steam версию), и поместите в папку лаунчера согласившись на замену, для работы переустановки игры через лаунчер." +
+                    "Благодарим за понимание.", "Monika After Story");
+                    return;
+                }
+
+                if (File.Exists(PathToMASFolder + "\\game\\script-topics.rpyc"))
+                {              
                     if (Directory.Exists(PathToMASFolder + "\\game"))
                     {
                         Directory.Delete(PathToMASFolder + "\\game", true);
@@ -571,12 +579,12 @@ namespace MASlauncher
                         //File.Delete(pathToArchive);
 
 
-                        if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\" + "mas.ini"))
-                            MASCurrentVersion = File.ReadAllText(System.Windows.Forms.Application.StartupPath + "\\" + "mas.ini");
+                        if (File.Exists(StartupPath + "\\" + "mas.ini"))
+                            MASCurrentVersion = File.ReadAllText(StartupPath + "\\" + "mas.ini");
 
                         await Task.Delay(10);
-                        masUpdater.gitUser = "Monika-After-Story";
-                        masUpdater.gitRepo = "MonikaModDev";
+
+                        
                         masUpdater.solicenBarText = DownloadData;
                         masUpdater.solicenBar = DownloadProgress;
 
@@ -590,15 +598,15 @@ namespace MASlauncher
                         Debug.WriteLine(masUpdater.UpdateDescriptionReady);
                         Debug.WriteLine(translateUpdater.UpdateDescriptionReady);
                         string d = masUpdater.UpdateDescription;
-                        masUpdater.DownloadUpdate("Monika-After-Story", "MonikaModDev");
+                        masUpdater.DownloadUpdate();
                         masUpdater.ExctractArchive(PathToMASFolder + "\\game");
-                        if (File.Exists(System.Windows.Forms.Application.StartupPath + "\\translate.ini")) 
-                            File.Delete(System.Windows.Forms.Application.StartupPath + "\\translate.ini");
+                        if (File.Exists(StartupPath + "\\translate.ini")) 
+                            File.Delete(StartupPath + "\\translate.ini");
 
                         while (!masUpdater.readyToInstall) await Task.Delay(100);
                         if ((bool)TranslateWhenReinstall.IsChecked)
                         {
-                            DownloadTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
+                            await DownloadTranslateUpdate("DenisSolicen", "MAS-Russifier-NEW", PathToTranslate);
 
                             while (!translateUpdater.readyToInstall) await Task.Delay(100);
                             UpdateTranslate();
@@ -612,7 +620,7 @@ namespace MASlauncher
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show("Для полноценной переустановки нам требуется наличие файлов MonikaAfterStory в папке с игрой, пожалуйста скачайте MonikaAfterStory с их сайта, и поместите в папку game внутри папки с игрой для работы переустановки игры через лаунчер.\n" +
+                    System.Windows.MessageBox.Show("Для полноценной переустановки нам требуется наличие файлов Monika-After-Story в папке с игрой, пожалуйста скачайте Monika-After-Story с их сайта, и поместите в папку game внутри папки с игрой для работы переустановки игры через лаунчер.\n" +
                 "Благодарим за понимание.", "Monika After Story");
                 }
             }
@@ -625,7 +633,7 @@ namespace MASlauncher
 
         public async Task UpdateLauncherAsync(bool showMessage = false)
         {
-            await launcherUpdater.CheckUpdate("SAn4Es-TV", "MASlauncher");
+            await launcherUpdater.CheckUpdate();
             Debug.WriteLine("-= Checking launcher Updates =-");
             Debug.WriteLine("This launcher version: " + launcherUpdater.CurrentVersion);
             Debug.WriteLine("New launcher version: " + launcherUpdater.UpdateVersion);
@@ -639,9 +647,9 @@ namespace MASlauncher
             {
                 System.Windows.Forms.MessageBox.Show("Вышло обновление лаунчера");
                 if (launcherUpdater.UpdateVersion != "")
-                { await launcherUpdater.CheckUpdate("SAn4Es-TV", "MASlauncher"); }
+                { await launcherUpdater.CheckUpdate(); }
 
-                launcherUpdater.DownloadUpdate(launcherUpdater.gitUser, launcherUpdater.gitRepo);
+                launcherUpdater.DownloadUpdate();
 
                 while (!launcherUpdater.readyToUpdate)
                 {
@@ -650,7 +658,7 @@ namespace MASlauncher
                 }
 
                 Debug.WriteLine("-= Extract Archive =-");
-                launcherUpdater.ExctractArchive(System.Windows.Forms.Application.StartupPath + "\\", true);
+                launcherUpdater.ExctractArchive(StartupPath + "\\", true);
             }
         }
         #endregion
