@@ -65,7 +65,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -82,13 +82,12 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="UIExceptionHandler, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Downloads\UIExceptionHandler.dll</HintPath>
+    <Reference Include="UIExceptionHandler">
+      <HintPath>libs\UIExceptionHandler.dll</HintPath>
     </Reference>
     <Reference Include="UIExceptionHandlerWinForms, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Downloads\UIExceptionHandlerWinForms.dll</HintPath>
+      <HintPath>libs\UIExceptionHandlerWinForms.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -103,6 +102,7 @@
       <DependentUpon>Error.xaml</DependentUpon>
     </Compile>
     <Compile Include="Logger.cs" />
+    <Compile Include="Solicen\Helpers\Helper.cs" />
     <Compile Include="Updater.cs" />
     <Page Include="Error.xaml">
       <SubType>Designer</SubType>
@@ -216,6 +216,11 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Updater.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
